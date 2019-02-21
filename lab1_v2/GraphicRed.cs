@@ -219,15 +219,21 @@ namespace lab1_v2
             MyPolyline myPolyline = new MyPolyline(pointFs);
             figures.Add(myRectangle);
             figures.Add(myPolyline);
+            
             foreach (figure figure in figures)
             {
                 figure.Draw(graph, Pen);
 
                 PB.Image = bmp;
-                TimeSpan interval = new TimeSpan(0, 0, 2);
-                Thread.Sleep(interval);
+                
+                //TimeSpan interval = new TimeSpan(0, 0, 2);
+                //Thread.Sleep(interval);
 
             }
+            Bitmap safeBMP = bmp;
+            //graph.Clear(Color.White);
+            graph.FillRectangle(Brushes.Aqua, 100, 120, 50, 50);
+            PB.Image = safeBMP;
         }
     }
 }
