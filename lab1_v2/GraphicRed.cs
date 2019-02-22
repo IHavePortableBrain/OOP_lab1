@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Shapes;
 
+
 using System.Threading;
 
 
@@ -19,6 +20,8 @@ namespace lab1_v2
         Bitmap bmp;
         Graphics graph;
         Pen Pen;
+        enum EnFig:int {curve, ellipse, line,rect};
+        EnFig enFig;
 
         public abstract class figure
         {
@@ -228,6 +231,37 @@ namespace lab1_v2
                 Thread.Sleep(interval);
 
             }
+        }
+
+        private void listView2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void LVfigures_ItemChecked(object sender, ItemCheckedEventArgs e)
+        {
+            
+        }
+
+        private void LVfigures_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+            if (LVfigures.SelectedIndices.Count > 0)
+            {
+                try
+                {
+                    enFig = (EnFig)LVfigures.SelectedIndices[0];
+                }
+                catch (Exception exc)
+                {
+                    //exe
+                }
+            }
+        }
+
+        private void LVfigures_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            
         }
     }
 }
