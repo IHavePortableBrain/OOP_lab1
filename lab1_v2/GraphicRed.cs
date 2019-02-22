@@ -17,11 +17,16 @@ namespace lab1_v2
 {
     public partial class form_graphic : Form
     {
-        Bitmap bmp;
+        public const int maxPointCount = 20;
+        public int pointCount  = 0;
+        Bitmap bmp, bmpStore;
         Graphics graph;
         Pen Pen;
+        Point[] Points = new Point[maxPointCount];
         enum EnFig:int {curve, ellipse, line,rect};
+        enum State: int {draw, wait, init};
         EnFig enFig;
+        State state = State.init;
 
         public abstract class figure
         {
@@ -50,11 +55,12 @@ namespace lab1_v2
                 pointFs[0] = new PointF(fromX, fromY);
                 pointFs[1] = new PointF(toX, toY);
             }
-
-           public override void Draw(Graphics graph,Pen pen)
-           {
+            ~MyLine(){
+            }
+            public override void Draw(Graphics graph,Pen pen)
+            {
                 graph.DrawLine(pen, pointFs[0].X, pointFs[0].Y, pointFs[1].X, pointFs[1].Y);
-           }
+            }
         }
 
         public sealed class MyPolygon : figure
@@ -205,10 +211,7 @@ namespace lab1_v2
 
         private void form_graphic_Activated(object sender, EventArgs e)
         {
-            bmp = new Bitmap(PB.Height, PB.Width);
             
-            graph = Graphics.FromImage(bmp);
-            Pen = new Pen(Color.Green);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -261,7 +264,152 @@ namespace lab1_v2
 
         private void LVfigures_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
+
+        }
+
+        static void swap<T>(ref T first, ref T second)
+        {
+            T temp = first;
+            first = second;
+            second = temp;
+        }
+
+        private void DrawSpecifiedFigure()
+        {
+            int topLeftX,topLeftY,delta,width,height;
+
+            delta = Points[1].X - Points[0].X;
+            if (delta > 0)
+            {
+                topLeftX = Points[0].X;
+                width = delta;
+            }
+            else
+            {
+                topLeftX = Points[1].X;
+                width = Points[0].X - Points[1].X;
+            }
+
+            delta = Points[1].Y - Points[0].Y;
+            if (delta > 0)
+            {
+                topLeftY = Points[0].Y;
+                height = delta;
+            }
+            else
+            {
+                topLeftY = Points[1].Y;
+                height = Points[0].Y - Points[1].Y;
+            }
+
+
+            switch (enFig)
+            {      
+                case EnFig.curve:
+
+                    break;
+                case EnFig.ellipse:
+                    MyEllipse myEllipse = new MyEllipse(topLeftX, topLeftY, width,height);
+                    myEllipse.Draw(graph, Pen);
+                    break;
+                case EnFig.line:
+                    MyLine myLine = new MyLine(Points[0].X, Points[0].Y, Points[1].X, Points[1].Y);
+                    myLine.Draw(graph, Pen);
+                    break;
+                case EnFig.rect:
+                    MyRectangle myRectangle = new MyRectangle(topLeftX, topLeftY, width, height);
+                    myRectangle.Draw(graph, Pen);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+
+        private void form_graphic_Enter(object sender, EventArgs e)
+        {
             
+        }
+
+        private void form_graphic_Load(object sender, EventArgs e)
+        {
+            PB.Height = 1200;//костыль показать, why drawing metod is sepetated from class; попросить научить пользоваться отладчиком по памяти
+            PB.Width = 599;
+            bmp = new Bitmap(PB.Height, PB.Width);
+            graph = Graphics.FromImage(bmp);
+            Pen = new Pen(Color.Green);
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            state = State.wait;
+            PB.Image = null;
+            if (graph != null)
+            {
+                graph.Clear(Color.White);
+            }
+        }
+
+        private void PB_MouseDown(object sender, MouseEventArgs e)
+        {
+            bmpStore = bmp.Clone(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height), bmp.PixelFormat);
+            Points[0] = e.Location;
+            state = State.draw;
+        }
+
+        private void PB_MouseUp(object sender, MouseEventArgs e)
+        {
+            Points[1] = e.Location;
+            DrawSpecifiedFigure();
+
+            state = State.wait;
+            PB.Image = bmp;
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void form_graphic_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 26 && state != State.init)//ctrl+z
+            {
+                swap(ref bmp, ref bmpStore);
+                graph = Graphics.FromImage(bmp);
+
+
+                PB.Image = bmp;
+            }
+        }
+
+        private void form_graphic_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            
+        }
+
+        private void form_graphic_KeyDown(object sender, KeyEventArgs e)
+        {
+           
+        }
+
+        private void form_graphic_KeyUp(object sender, KeyEventArgs e)
+        {
+            
+        }
+
+        private void PB_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (state == State.draw)
+            {
+                bmp.Dispose();
+                bmp = bmpStore.Clone(new System.Drawing.Rectangle(0, 0, bmpStore.Width, bmpStore.Height), bmpStore.PixelFormat);
+                graph.Dispose();
+                graph = Graphics.FromImage(bmp);
+                Points[1] = e.Location;
+                DrawSpecifiedFigure();
+                PB.Image = bmp;   
+            } 
         }
     }
 }
