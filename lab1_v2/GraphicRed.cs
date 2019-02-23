@@ -421,7 +421,38 @@ namespace lab1_v2
             graph = Graphics.FromImage(bmp);
         }
 
-        
+        private void btnColor_Click(object sender, EventArgs e)
+        {
+            colorDialog.ShowDialog();
+            Pen.Color = colorDialog.Color;
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                Pen.Width = (float)numericUpDown1.Value;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            
+        }
+
+        private void numericUpDown1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            try
+            {
+                Pen.Width = (float)numericUpDown1.Value;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
 
         static void swap<T>(ref T first, ref T second)
         {
