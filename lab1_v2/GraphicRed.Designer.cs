@@ -106,7 +106,6 @@
             this.LVfigures.TabIndex = 5;
             this.LVfigures.TileSize = new System.Drawing.Size(200, 200);
             this.LVfigures.UseCompatibleStateImageBehavior = false;
-            this.LVfigures.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.LVfigures_ItemChecked);
             this.LVfigures.SelectedIndexChanged += new System.EventHandler(this.LVfigures_SelectedIndexChanged);
             // 
             // ImgList

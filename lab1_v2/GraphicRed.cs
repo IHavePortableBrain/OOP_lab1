@@ -17,14 +17,21 @@ namespace lab1_v2
 {
     public partial class form_graphic : Form
     {
+        public const int maxPointCount = 20;
+        public int pointCount  = 0;
         Bitmap bmp, bmpStore;
         Graphics graph;
         Pen Pen;
-        List<PointF> Points = new List<PointF>();
+        List<Point> Points = new List<Point>(0);
         enum EnFig:int {curve, ellipse, line,rect};
         enum State: int {draw, wait, init};
         EnFig enFig;
         State state = State.init;
+
+        public form_graphic()
+        {
+            InitializeComponent();
+        }
 
         public abstract class figure
         {
@@ -152,11 +159,6 @@ namespace lab1_v2
             }
         }
 
-        public form_graphic()
-        {
-            InitializeComponent();
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
 
@@ -227,19 +229,8 @@ namespace lab1_v2
             }
         }
 
-        private void listView2_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void LVfigures_ItemChecked(object sender, ItemCheckedEventArgs e)
-        {
-            
-        }
-
         private void LVfigures_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Points.RemoveRange(0, Points.Count);
 
             if (LVfigures.SelectedIndices.Count > 0)
             {
@@ -254,16 +245,9 @@ namespace lab1_v2
             }
         }
 
-        static void swap<T>(ref T first, ref T second)
-        {
-            T temp = first;
-            first = second;
-            second = temp;
-        }
-
         private void DrawSpecifiedFigure()
         {
-            float topLeftX,topLeftY,delta,width,height;
+            int topLeftX, topLeftY, delta, width, height;
 
             delta = Points[1].X - Points[0].X;
             if (delta > 0)
@@ -289,14 +273,14 @@ namespace lab1_v2
                 height = Points[0].Y - Points[1].Y;
             }
 
+
             switch (enFig)
-            {      
+            {
                 case EnFig.curve:
-                    MyCurve myCurve = new MyCurve(Points.ToArray());
-                    myCurve.Draw(graph, Pen);
+
                     break;
                 case EnFig.ellipse:
-                    MyEllipse myEllipse = new MyEllipse(topLeftX, topLeftY, width,height);
+                    MyEllipse myEllipse = new MyEllipse(topLeftX, topLeftY, width, height);
                     myEllipse.Draw(graph, Pen);
                     break;
                 case EnFig.line:
@@ -310,7 +294,6 @@ namespace lab1_v2
                 default:
                     break;
             }
-            PB.Image = bmp;
         }
 
         private void form_graphic_Load(object sender, EventArgs e)
@@ -320,9 +303,6 @@ namespace lab1_v2
             bmp = new Bitmap(PB.Height, PB.Width);
             graph = Graphics.FromImage(bmp);
             Pen = new Pen(Color.Green);
-
-            Points.Add(new PointF());//adding statr and dest points
-            Points.Add(new PointF());
         }
 
         private void btnClear_Click(object sender, EventArgs e)
@@ -331,62 +311,26 @@ namespace lab1_v2
             PB.Image = null;
             if (graph != null)
             {
-                Points.RemoveRange(0, Points.Count);
                 graph.Clear(Color.White);
-
+                Points.RemoveRange(0, Points.Count);
             }
-        }
-
-        private void restoreBmp()
-        {
-            bmp.Dispose();
-            bmp = bmpStore.Clone(new System.Drawing.Rectangle(0, 0, bmpStore.Width, bmpStore.Height), bmpStore.PixelFormat);
-            graph.Dispose();
-            graph = Graphics.FromImage(bmp);
         }
 
         private void PB_MouseDown(object sender, MouseEventArgs e)
         {
-            if (state == State.wait && enFig == EnFig.curve)
-            {
-                restoreBmp();
-                Points.Add(e.Location);
-                DrawSpecifiedFigure();
-            }
-            else
-            if (state == State.init)
-            {
-                bmpStore = bmp.Clone(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height), bmp.PixelFormat);
-                Points.Add(e.Location);
-                Points.Add(e.Location);//second point is to prevent if in move mouse handle event
-                state = State.draw;
-            }        
-            
+            bmpStore = bmp.Clone(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height), bmp.PixelFormat);
+            Points[0] = e.Location;
+            state = State.draw;
         }
 
         private void PB_MouseUp(object sender, MouseEventArgs e)
         {
-         
             Points[1] = e.Location;
             DrawSpecifiedFigure();
 
             state = State.wait;
-            
+            PB.Image = bmp;
         }
-
-
-        private void PB_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (state == State.draw)
-            {
-                restoreBmp();
-                Points[1] = e.Location;
-                DrawSpecifiedFigure();  
-            }
-            
-        }
-
-        
 
         private void form_graphic_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -400,7 +344,26 @@ namespace lab1_v2
             }
         }
 
-        
+        private void PB_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (state == State.draw)
+            {
+                bmp.Dispose();
+                bmp = bmpStore.Clone(new System.Drawing.Rectangle(0, 0, bmpStore.Width, bmpStore.Height), bmpStore.PixelFormat);
+                graph.Dispose();
+                graph = Graphics.FromImage(bmp);
+                Points[1] = e.Location;
+                DrawSpecifiedFigure();
+                PB.Image = bmp;   
+            } 
+        }
+        //_____________________________________________________
 
+        static void swap<T>(ref T first, ref T second)
+        {
+            T temp = first;
+            first = second;
+            second = temp;
+        }
     }
 }
