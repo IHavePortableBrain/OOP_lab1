@@ -17,13 +17,14 @@ namespace lab1_v2
 {
     public partial class form_graphic : Form
     {
-        public int pointCount  = 0;
         Bitmap bmp, bmpStore;
         Graphics graph;
         Pen Pen;
         List<PointF> Points = new List<PointF>(0);
         enum EnFig:int {curve, ellipse, line,rect};
         enum State: int {draw, wait, init};
+        enum KeyControl : int { none, shift, ctrl };
+        KeyControl keyCtrl = KeyControl.none;
         EnFig enFig;
         State state = State.init;
 
@@ -282,6 +283,16 @@ namespace lab1_v2
                     myCurve.Draw(graph, Pen);
                     break;
                 case EnFig.ellipse:
+                    if (keyCtrl == KeyControl.shift)
+                    {
+                        float temp = Math.Max(width, height);
+                        if (temp == width)
+                        {
+                            height = temp;
+                        }
+                        else
+                            width = temp;
+                    }
                     MyEllipse myEllipse = new MyEllipse(topLeftX, topLeftY, width, height);
                     myEllipse.Draw(graph, Pen);
                     break;
@@ -290,6 +301,16 @@ namespace lab1_v2
                     myLine.Draw(graph, Pen);
                     break;
                 case EnFig.rect:
+                    if (keyCtrl == KeyControl.shift)
+                    {
+                        float temp = Math.Max(width, height);
+                        if (temp == width)
+                        {
+                            height = temp;
+                        }
+                        else
+                            width = temp;
+                    }
                     MyRectangle myRectangle = new MyRectangle(topLeftX, topLeftY, width, height);
                     myRectangle.Draw(graph, Pen);
                     break;
@@ -366,7 +387,19 @@ namespace lab1_v2
 
 
                 PB.Image = bmp;
-            }
+            }            
+        }
+
+        private void form_graphic_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.ShiftKey)
+                keyCtrl = KeyControl.none;
+        }
+
+        private void form_graphic_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.ShiftKey)
+                keyCtrl = KeyControl.shift;
         }
 
         private void PB_MouseMove(object sender, MouseEventArgs e)
@@ -387,6 +420,8 @@ namespace lab1_v2
             graph.Dispose();
             graph = Graphics.FromImage(bmp);
         }
+
+        
 
         static void swap<T>(ref T first, ref T second)
         {

@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem(new string[] {
             "Curve"}, 0, System.Drawing.Color.Empty, System.Drawing.SystemColors.Window, null);
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Ellipse", 1);
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Line", 2);
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Rectangle", 3);
+            System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem("Ellipse", 1);
+            System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem("Line", 2);
+            System.Windows.Forms.ListViewItem listViewItem8 = new System.Windows.Forms.ListViewItem("Rectangle", 3);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(form_graphic));
             this.button1 = new System.Windows.Forms.Button();
             this.PB = new System.Windows.Forms.PictureBox();
@@ -67,7 +67,6 @@
             this.PB.Size = new System.Drawing.Size(1238, 599);
             this.PB.TabIndex = 2;
             this.PB.TabStop = false;
-           
             this.PB.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PB_MouseDown);
             this.PB.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PB_MouseMove);
             this.PB.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PB_MouseUp);
@@ -84,19 +83,19 @@
             // 
             // LVfigures
             // 
-            listViewItem1.StateImageIndex = 0;
-            listViewItem1.Tag = "";
-            listViewItem2.Checked = true;
-            listViewItem2.StateImageIndex = 1;
-            listViewItem3.Checked = true;
-            listViewItem3.StateImageIndex = 2;
-            listViewItem4.Checked = true;
-            listViewItem4.StateImageIndex = 3;
+            listViewItem5.StateImageIndex = 0;
+            listViewItem5.Tag = "";
+            listViewItem6.Checked = true;
+            listViewItem6.StateImageIndex = 1;
+            listViewItem7.Checked = true;
+            listViewItem7.StateImageIndex = 2;
+            listViewItem8.Checked = true;
+            listViewItem8.StateImageIndex = 3;
             this.LVfigures.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1,
-            listViewItem2,
-            listViewItem3,
-            listViewItem4});
+            listViewItem5,
+            listViewItem6,
+            listViewItem7,
+            listViewItem8});
             this.LVfigures.LargeImageList = this.ImgList;
             this.LVfigures.Location = new System.Drawing.Point(844, 2);
             this.LVfigures.MultiSelect = false;
@@ -152,7 +151,9 @@
             this.Name = "form_graphic";
             this.Text = "Graphic redactor";
             this.Load += new System.EventHandler(this.form_graphic_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.form_graphic_KeyDown);
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.form_graphic_KeyPress);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.form_graphic_KeyUp);
             ((System.ComponentModel.ISupportInitialize)(this.PB)).EndInit();
             this.ResumeLayout(false);
 
