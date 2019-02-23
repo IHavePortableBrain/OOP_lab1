@@ -231,6 +231,8 @@ namespace lab1_v2
         private void LVfigures_SelectedIndexChanged(object sender, EventArgs e)
         {
             Points.RemoveRange(0, Points.Count);
+            state = State.init;
+
             if (LVfigures.SelectedIndices.Count > 0)
             {
                 try
@@ -277,6 +279,7 @@ namespace lab1_v2
             {
                 case EnFig.curve:
                     MyCurve myCurve = new MyCurve(Points.ToArray());
+                    myCurve.Draw(graph, Pen);
                     break;
                 case EnFig.ellipse:
                     MyEllipse myEllipse = new MyEllipse(topLeftX, topLeftY, width, height);
@@ -322,10 +325,12 @@ namespace lab1_v2
             {
                 restoreBmp();
                 Points.Add(e.Location);
+                if (Points.Count > 1)
+                    DrawSpecifiedFigure();
                 PB.Image = bmp;
             }
             else
-            if (state == State.wait || state == State.init) 
+            if (state == State.wait || state == State.init)
             {
                 bmpStore = bmp.Clone(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height), bmp.PixelFormat);
                 Points.Add(e.Location);
@@ -341,16 +346,20 @@ namespace lab1_v2
             {
                 Points[1] = e.Location;
                 DrawSpecifiedFigure();
-
-                Points.RemoveRange(0, Points.Count);
-                state = State.wait;
+                if (enFig != EnFig.curve)
+                {
+                    Points.RemoveRange(0, Points.Count);
+                    state = State.init;
+                }
+                else
+                    state = State.wait;
             }
             
         }
 
         private void form_graphic_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (e.KeyChar == 26 && state != State.init)//ctrl+z
+            if (e.KeyChar == 26)//ctrl+z && state != State.init
             {
                 swap(ref bmp, ref bmpStore);
                 graph = Graphics.FromImage(bmp);
