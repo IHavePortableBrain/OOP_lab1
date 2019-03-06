@@ -12,19 +12,21 @@ using System.Windows.Shapes;
 
 using System.Threading;
 
-
+// todo
+// 2. correct naming
+// 3. get rid of cases and switches for shapes
 namespace lab1_v2
 {
     public partial class form_graphic : Form
     {
-        Bitmap bmp, bmpStore;
-        Graphics graph;
+        Bitmap Bmp, BmpStore;
+        Graphics Graph;
         Pen Pen;
         List<PointF> Points = new List<PointF>(0);
-        enum EnFig:int {curve, ellipse, line,rect};
-        enum State: int {draw, wait, init};
+        enum EnFig : int { curve, ellipse, line, rect };
+        enum State : int { draw, wait, init };
         enum KeyControl : int { none, shift, ctrl };
-        KeyControl keyCtrl = KeyControl.none;
+        KeyControl KeyCtrl = KeyControl.none;
         EnFig enFig;
         State state = State.init;
 
@@ -33,135 +35,9 @@ namespace lab1_v2
             InitializeComponent();
         }
 
-        public abstract class figure
-        {
-            private readonly int PointCount;
-            public PointF[] pointFs;
-            protected figure(int PointCount)
-            {
-                if (PointCount > 0)
-                {
-                    this.PointCount = PointCount;
-                    pointFs = new PointF[this.PointCount];
-                }
-                else
-                {
-                    //throw exeption
-                }
-            }
-
-            public abstract void Draw(Graphics graph, Pen pen);
-        }
-
-        public sealed class MyLine : figure
-        {
-            public MyLine(float fromX, float fromY, float toX, float toY) : base(2)
-            {
-                pointFs[0] = new PointF(fromX, fromY);
-                pointFs[1] = new PointF(toX, toY);
-            }
-            ~MyLine(){
-            }
-            public override void Draw(Graphics graph,Pen pen)
-            {
-                graph.DrawLine(pen, pointFs[0].X, pointFs[0].Y, pointFs[1].X, pointFs[1].Y);
-            }
-        }
-
-        public sealed class MyPolygon : figure
-        {
-            public MyPolygon(PointF[] pointFs) : base(pointFs.Length)
-            {
-                for (int i = 0; i < pointFs.Length; i++)
-                {
-                    this.pointFs[i] = pointFs[i];
-                }
-            }
-            public override void Draw(Graphics graph, Pen pen)
-            {
-                graph.DrawPolygon(pen, pointFs);
-            }
-        }
-
-        public class MyEllipse : figure
-        {
-            public float width, height;
-            public MyEllipse(float leftTopX, float leftTopY, float width, float height) : base(1)
-            {
-                pointFs[0].X = leftTopX;
-                pointFs[0].Y = leftTopY;
-                this.width = width;
-                this.height = height;
-            }
-            public override void Draw(Graphics graph, Pen pen)
-            {
-                graph.DrawEllipse(pen, pointFs[0].X, pointFs[0].Y, width, height);
-            }
-        }
-
-        public sealed class MyPie : MyEllipse
-        {
-            public float startAngle, sweepAngle;
-            public MyPie(MyRectangle rect, float startAngle, float sweepAngle) : base(rect.pointFs[0].X, rect.pointFs[0].Y, rect.width, rect.height)
-            {
-                this.startAngle = startAngle;
-                this.sweepAngle = sweepAngle;
-            }
-            public override void Draw(Graphics graph, Pen pen)
-            {
-                graph.DrawPie(pen, pointFs[0].X, pointFs[0].Y,width, height, startAngle, sweepAngle);
-            }
-        }
-
-        public sealed class MyCurve : figure
-        {
-            public MyCurve(PointF[] pointFs) : base(pointFs.Length)
-            {
-                for (int i = 0; i < pointFs.Length; i++)
-                {
-                    this.pointFs[i] = pointFs[i];
-                }
-            }
-            public override void Draw(Graphics graph, Pen pen)
-            {
-                graph.DrawCurve(pen, pointFs);
-            }
-        }
-
-        public sealed class MyRectangle : figure
-        {
-            public float width, height;
-            public MyRectangle(float leftTopX, float leftTopY, float width, float height) : base(1)
-            {
-                pointFs[0].X = leftTopX;
-                pointFs[0].Y = leftTopY;
-                this.width = width;
-                this.height = height;
-            }
-            public override void Draw(Graphics graph, Pen pen)
-            {
-                graph.DrawRectangle(pen, pointFs[0].X, pointFs[0].Y, width, height);
-            }
-        }
-
-        public sealed class MyPolyline : figure
-        {
-            public MyPolyline(PointF[] pointFs) : base(pointFs.Length)
-            {
-                for (int i = 0; i < pointFs.Length; i++)
-                {
-                    this.pointFs[i] = pointFs[i];
-                }
-            }
-            public override void Draw(Graphics graph, Pen pen)
-            {
-                graph.DrawLines(pen, pointFs);
-            }
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
-
+            MyLine my = new MyLine(40,40,40,40);
             PointF[] testPointFs = new PointF[4];
             testPointFs[0] = new PointF(0, 0);
             testPointFs[1] = new PointF(100, 300);
@@ -175,16 +51,16 @@ namespace lab1_v2
             testPointFs2[3] = new PointF(50, 400);
             testPointFs2[4] = new PointF(35, 340);
 
-            List<figure> figures = new List<figure>();
+            List<Figure> figures = new List<Figure>();
             figures.Add(new MyLine(0, 0, 0, 0));
             figures.Add(new MyEllipse(0, 0, 100, 300));
             figures.Add(new MyCurve(testPointFs));
             figures.Add(new MyRectangle(50, 50, 50, 100));
             figures.Add(new MyPolyline(testPointFs));
             figures.Add(new MyPolygon(testPointFs2));
-            foreach (figure figure in figures)
+            foreach (Figure figure in figures)
             {
-                figure.Draw(graph, Pen);
+                figure.Draw(Graph, Pen);
             }
 
             //MyLine myLine = new MyLine(0, 0, 100, 40);
@@ -204,12 +80,12 @@ namespace lab1_v2
             //myPolyline.Draw(graph, Pen);
             //myPolygon.Draw(graph, Pen);
 
-            PB.Image = bmp;
+            PB.Image = Bmp;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            List<figure> figures = new List<figure>();
+            List<Figure> figures = new List<Figure>();
             PointF[] pointFs = new PointF[] { new PointF(50,50),
                                               new PointF(75,40),
                                               new PointF(100,50)};
@@ -218,11 +94,11 @@ namespace lab1_v2
             MyPolyline myPolyline = new MyPolyline(pointFs);
             figures.Add(myRectangle);
             figures.Add(myPolyline);
-            foreach (figure figure in figures)
+            foreach (Figure figure in figures)
             {
-                figure.Draw(graph, Pen);
+                figure.Draw(Graph, Pen);
 
-                PB.Image = bmp;
+                PB.Image = Bmp;
                 TimeSpan interval = new TimeSpan(0, 0, 2);
                 Thread.Sleep(interval);
 
@@ -249,83 +125,84 @@ namespace lab1_v2
 
         private void DrawSpecifiedFigure()
         {
-            float topLeftX, topLeftY, delta, width, height;
 
-            delta = Points[1].X - Points[0].X;
-            if (delta > 0)
+            float TopLeftX, TopLeftY, Delta, Width, Height;
+
+            Delta = Points[1].X - Points[0].X;
+            if (Delta > 0)
             {
-                topLeftX = Points[0].X;
-                width = delta;
+                TopLeftX = Points[0].X;
+                Width = Delta;
             }
             else
             {
-                topLeftX = Points[1].X;
-                width = Points[0].X - Points[1].X;
+                TopLeftX = Points[1].X;
+                Width = Points[0].X - Points[1].X;
             }
 
-            delta = Points[1].Y - Points[0].Y;
-            if (delta > 0)
+            Delta = Points[1].Y - Points[0].Y;
+            if (Delta > 0)
             {
-                topLeftY = Points[0].Y;
-                height = delta;
+                TopLeftY = Points[0].Y;
+                Height = Delta;
             }
             else
             {
-                topLeftY = Points[1].Y;
-                height = Points[0].Y - Points[1].Y;
+                TopLeftY = Points[1].Y;
+                Height = Points[0].Y - Points[1].Y;
             }
 
 
             switch (enFig)
             {
                 case EnFig.curve:
-                    MyCurve myCurve = new MyCurve(Points.ToArray());
-                    myCurve.Draw(graph, Pen);
+                    MyCurve Curve = new MyCurve(Points.ToArray());
+                    Curve.Draw(Graph, Pen);
                     break;
                 case EnFig.ellipse:
-                    if (keyCtrl == KeyControl.shift)
+                    if (KeyCtrl == KeyControl.shift)
                     {
-                        float temp = Math.Max(width, height);
-                        if (temp == width)
+                        float temp = Math.Max(Width, Height);
+                        if (temp == Width)
                         {
-                            height = temp;
+                            Height = temp;
                         }
                         else
-                            width = temp;
+                            Width = temp;
                     }
-                    MyEllipse myEllipse = new MyEllipse(topLeftX, topLeftY, width, height);
-                    myEllipse.Draw(graph, Pen);
+                    MyEllipse Ellipse = new MyEllipse(TopLeftX, TopLeftY, Width, Height);
+                    Ellipse.Draw(Graph, Pen);
                     break;
                 case EnFig.line:
-                    MyLine myLine = new MyLine(Points[0].X, Points[0].Y, Points[1].X, Points[1].Y);
-                    myLine.Draw(graph, Pen);
+                    MyLine Line = new MyLine(Points[0].X, Points[0].Y, Points[1].X, Points[1].Y);
+                    Line.Draw(Graph, Pen);
                     break;
                 case EnFig.rect:
-                    if (keyCtrl == KeyControl.shift)
+                    if (KeyCtrl == KeyControl.shift)
                     {
-                        float temp = Math.Max(width, height);
-                        if (temp == width)
+                        float temp = Math.Max(Width, Height);
+                        if (temp == Width)
                         {
-                            height = temp;
+                            Height = temp;
                         }
                         else
-                            width = temp;
+                            Width = temp;
                     }
-                    MyRectangle myRectangle = new MyRectangle(topLeftX, topLeftY, width, height);
-                    myRectangle.Draw(graph, Pen);
+                    MyRectangle Rectangle = new MyRectangle(TopLeftX, TopLeftY, Width, Height);
+                    Rectangle.Draw(Graph, Pen);
                     break;
                 default:
                     break;
             }
-            PB.Image = bmp;
+            PB.Image = Bmp;
         }
 
         private void form_graphic_Load(object sender, EventArgs e)
         {
             PB.Height = 1200;//костыль показать, why drawing metod is sepetated from class; попросить научить пользоваться отладчиком по памяти
             PB.Width = 599;
-            bmp = new Bitmap(PB.Height, PB.Width);
-            graph = Graphics.FromImage(bmp);
+            Bmp = new Bitmap(PB.Height, PB.Width);
+            Graph = Graphics.FromImage(Bmp);
             Pen = new Pen(Color.Green);
         }
 
@@ -333,9 +210,9 @@ namespace lab1_v2
         {
             state = State.wait;
             PB.Image = null;
-            if (graph != null)
+            if (Graph != null)
             {
-                graph.Clear(Color.White);
+                Graph.Clear(Color.White);
                 Points.RemoveRange(0, Points.Count);
             }
         }
@@ -348,17 +225,17 @@ namespace lab1_v2
                 Points.Add(e.Location);
                 if (Points.Count > 1)
                     DrawSpecifiedFigure();
-                PB.Image = bmp;
+                PB.Image = Bmp;
             }
             else
             if (state == State.wait || state == State.init)
             {
-                bmpStore = bmp.Clone(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height), bmp.PixelFormat);
+                BmpStore = Bmp.Clone(new System.Drawing.Rectangle(0, 0, Bmp.Width, Bmp.Height), Bmp.PixelFormat);
                 Points.Add(e.Location);
                 Points.Add(e.Location);
                 state = State.draw;
             }
-            
+
         }
 
         private void PB_MouseUp(object sender, MouseEventArgs e)
@@ -375,31 +252,31 @@ namespace lab1_v2
                 else
                     state = State.wait;
             }
-            
+
         }
 
         private void form_graphic_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 26)//ctrl+z && state != State.init
             {
-                swap(ref bmp, ref bmpStore);
-                graph = Graphics.FromImage(bmp);
+                swap(ref Bmp, ref BmpStore);
+                Graph = Graphics.FromImage(Bmp);
 
 
-                PB.Image = bmp;
-            }            
+                PB.Image = Bmp;
+            }
         }
 
         private void form_graphic_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.ShiftKey)
-                keyCtrl = KeyControl.none;
+                KeyCtrl = KeyControl.none;
         }
 
         private void form_graphic_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.ShiftKey)
-                keyCtrl = KeyControl.shift;
+                KeyCtrl = KeyControl.shift;
         }
 
         private void PB_MouseMove(object sender, MouseEventArgs e)
@@ -409,16 +286,16 @@ namespace lab1_v2
                 restoreBmp();
                 Points[1] = e.Location;
                 DrawSpecifiedFigure();
-            } 
+            }
         }
         //_____________________________________________________
 
         private void restoreBmp()
         {
-            bmp.Dispose();
-            bmp = bmpStore.Clone(new System.Drawing.Rectangle(0, 0, bmpStore.Width, bmpStore.Height), bmpStore.PixelFormat);
-            graph.Dispose();
-            graph = Graphics.FromImage(bmp);
+            Bmp.Dispose();
+            Bmp = BmpStore.Clone(new System.Drawing.Rectangle(0, 0, BmpStore.Width, BmpStore.Height), BmpStore.PixelFormat);
+            Graph.Dispose();
+            Graph = Graphics.FromImage(Bmp);
         }
 
         private void btnColor_Click(object sender, EventArgs e)
@@ -438,7 +315,7 @@ namespace lab1_v2
 
                 throw;
             }
-            
+
         }
 
         private void numericUpDown1_KeyPress(object sender, KeyPressEventArgs e)
