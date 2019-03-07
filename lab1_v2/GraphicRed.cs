@@ -59,6 +59,8 @@ namespace lab1_v2
 
             float TopLeftX, TopLeftY, Delta, Width, Height;
 
+            Figure SpecifiedFigure = new Figure(Points.Count);
+
             Delta = Points[1].X - Points[0].X;
             if (Delta > 0)
             {
@@ -128,6 +130,12 @@ namespace lab1_v2
             PB.Image = Bmp;
         }
 
+        private void LoadFigures()
+        {
+            
+            LVfigures.Items.Insert(LVfigures.Items.Count, new ListViewItem());
+        }
+
         private void form_graphic_Load(object sender, EventArgs e)
         {
             PB.Height = 1200;//костыль показать, why drawing metod is sepetated from class; попросить научить пользоваться отладчиком по памяти
@@ -135,6 +143,7 @@ namespace lab1_v2
             Bmp = new Bitmap(PB.Height, PB.Width);
             Graph = Graphics.FromImage(Bmp);
             Pen = new Pen(Color.Green);
+            LoadFigures();
         }
 
         private void btnClear_Click(object sender, EventArgs e)

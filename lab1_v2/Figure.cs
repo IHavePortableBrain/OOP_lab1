@@ -11,7 +11,7 @@ namespace lab1_v2
     {
         private readonly int PointCount;
         public PointF[] PointFs;
-        protected Figure(int PointCount)
+        protected internal Figure(int PointCount)
         {
             if (PointCount > 0)
             {
