@@ -35,9 +35,7 @@
             System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Line", 2);
             System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Rectangle", 3);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(form_graphic));
-            this.button1 = new System.Windows.Forms.Button();
             this.PB = new System.Windows.Forms.PictureBox();
-            this.button2 = new System.Windows.Forms.Button();
             this.LVfigures = new System.Windows.Forms.ListView();
             this.ImgList = new System.Windows.Forms.ImageList(this.components);
             this.btnClear = new System.Windows.Forms.Button();
@@ -47,16 +45,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.PB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(31, 8);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(132, 51);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // PB
             // 
@@ -73,16 +61,6 @@
             this.PB.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PB_MouseDown);
             this.PB.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PB_MouseMove);
             this.PB.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PB_MouseUp);
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(213, 11);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(217, 50);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "button2";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // LVfigures
             // 
@@ -172,9 +150,7 @@
             this.Controls.Add(this.btnColor);
             this.Controls.Add(this.btnClear);
             this.Controls.Add(this.LVfigures);
-            this.Controls.Add(this.button2);
             this.Controls.Add(this.PB);
-            this.Controls.Add(this.button1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
             this.Name = "form_graphic";
@@ -190,10 +166,7 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.PictureBox PB;
-        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.ListView LVfigures;
         private System.Windows.Forms.ImageList ImgList;
         private System.Windows.Forms.Button btnClear;
