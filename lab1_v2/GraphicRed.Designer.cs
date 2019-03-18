@@ -81,7 +81,7 @@
             this.LVfigures.Location = new System.Drawing.Point(844, 2);
             this.LVfigures.MultiSelect = false;
             this.LVfigures.Name = "LVfigures";
-            this.LVfigures.Size = new System.Drawing.Size(332, 61);
+            this.LVfigures.Size = new System.Drawing.Size(406, 61);
             this.LVfigures.SmallImageList = this.ImgList;
             this.LVfigures.TabIndex = 5;
             this.LVfigures.TileSize = new System.Drawing.Size(200, 200);
