@@ -22,8 +22,11 @@ using System.Threading;
 //и pen  тоже сохраняй
 //5. баг если не отжимать лкм в пределах пб?
 // 6. баг рисование курвой после очистки
+//7. рисование при невыбранной фигуре
+//8. pen глоабльную убрать.
 // ask
 //1. как свапать переменные закрываемые свойствами?(передать как ref)
+//2. Общее начало виртуального(абстрактного) метода у потомков?.
 namespace lab1_v2
 {
     public partial class form_graphic : Form
@@ -36,14 +39,12 @@ namespace lab1_v2
 
         private const string CtrlZFileName = "ctrlz.dat";
         private const string CtrlYFileName = "ctrly.dat";
-        FileStream CtrlZFile = new FileStream(CtrlZFileName, FileMode.Create);
-        FileStream CtrlYFile = new FileStream(CtrlYFileName, FileMode.Create);
+        FileStream UndoFile = new FileStream(CtrlZFileName, FileMode.Create);
+        FileStream RedoFile = new FileStream(CtrlYFileName, FileMode.Create);
         BinaryFormatter Formatter = new BinaryFormatter();
-        UInt32 SerializedFiguresCount = 0;
-        UInt32 DeserializedFiguresCount = 0;
+        UInt32 UndoFiguresCount = 0;
+        UInt32 RedoFiguresCount = 0;
 
-        
-        
         enum EnFig : int { curve, ellipse, line, rect };
         enum State : int { draw, wait, init };
 
@@ -57,8 +58,13 @@ namespace lab1_v2
 
         private void LVfigures_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (SpecifiedFigure != null)
-                SpecifiedFigure.PointCount = 0;
+            SpecifiedFigure.PointCount = 0;
+            Pen.Color = colorDialog.Color;
+            Pen.Width = (float)numericUpDown1.Value;
+           // if (SpecifiedFigure != null) 
+                
+                //Pen = SpecifiedFigure.Pen;
+
             state = State.init;
 
             if (LVfigures.SelectedIndices.Count > 0)
@@ -68,16 +74,16 @@ namespace lab1_v2
                 switch (enFig)
                 {
                     case EnFig.curve:
-                        SpecifiedFigure = new MyCurve(Pen);
+                        SpecifiedFigure = new MyCurve();
                         break;
                     case EnFig.ellipse:
-                        SpecifiedFigure = new MyEllipse(Pen);
+                        SpecifiedFigure = new MyEllipse();
                         break;
                     case EnFig.line:
-                        SpecifiedFigure = new MyLine(Pen);
+                        SpecifiedFigure = new MyLine();
                         break;
                     case EnFig.rect:
-                        SpecifiedFigure = new MyRectangle(Pen);
+                        SpecifiedFigure = new MyRectangle();
                         break;
                 }
             }
@@ -86,7 +92,7 @@ namespace lab1_v2
         private void DrawSpecifiedFigure()
         {
             SpecifiedFigure.Modify();
-            SpecifiedFigure.Draw(Graph);
+            SpecifiedFigure.Draw(Graph, Pen);
             PB.Image = Bmp;
         }
 
@@ -102,7 +108,8 @@ namespace lab1_v2
             PB.Width = 599;
             Bmp = new Bitmap(PB.Height, PB.Width);
             Graph = Graphics.FromImage(Bmp);
-            Pen = new Pen(Color.Green);
+            SpecifiedFigure = new MyLine();
+            Pen = new Pen(SpecifiedFigure.PenColor, SpecifiedFigure.PenWidth);
             LoadFigures();
         }
 
@@ -110,6 +117,7 @@ namespace lab1_v2
         {
             state = State.wait;
             PB.Image = null;
+            //BmpStore.Dispose(); 
             if (Graph != null)
             {
                 Graph.Clear(Color.White);
@@ -143,9 +151,9 @@ namespace lab1_v2
         private void DrawAndSerializeSpecifiedFigure()
         {
             DrawSpecifiedFigure();
-            Formatter.Serialize(CtrlZFile, SpecifiedFigure);
-            SerializedFiguresCount++;
-            CtrlZFile.Flush();
+            Formatter.Serialize(UndoFile, SpecifiedFigure);
+            UndoFiguresCount++;
+            UndoFile.Flush();
         }
 
         private void PB_MouseUp(object sender, MouseEventArgs e)
@@ -165,7 +173,7 @@ namespace lab1_v2
 
         }
 
-        private void DrawCancel()
+        private void Undo()
         {
             PB.Image = null;
             if (Graph != null)
@@ -173,30 +181,52 @@ namespace lab1_v2
                 Graph.Clear(Color.White);
             }
 
-            CtrlZFile.Position = 0;
-            SerializedFiguresCount--;
-            DeserializedFiguresCount++;
-            for (int i = 0; i < SerializedFiguresCount; i++)
+            UndoFile.Position = 0;
+            Formatter.Serialize(RedoFile, Formatter.Deserialize(UndoFile));
+            UndoFiguresCount--;
+            RedoFiguresCount++;
+            for (int i = 0; i < UndoFiguresCount; i++)
             {
-                SpecifiedFigure = (Figure)Formatter.Deserialize(CtrlZFile);
+                SpecifiedFigure = (Figure)Formatter.Deserialize(UndoFile);
+                Pen = new Pen(SpecifiedFigure.PenColor, SpecifiedFigure.PenWidth);
                 DrawSpecifiedFigure();
             }
-            
+        }
 
+        private void Redo()
+        {
+            PB.Image = null;
+            if (Graph != null)
+            {
+                Graph.Clear(Color.White);
+            }
 
-            //CtrlZFile.Flush();
-            //Formatter.Serialize(CtrlYFile,Formatter.Deserialize(CtrlZFile));
+            RedoFile.Position = 0;
+            Formatter.Serialize(UndoFile, Formatter.Deserialize(RedoFile));
+            UndoFiguresCount++;
+            RedoFiguresCount--;
+            for (int i = 0; i < RedoFiguresCount; i++)
+            {
+                SpecifiedFigure = (Figure)Formatter.Deserialize(RedoFile);
+                Pen = new Pen(SpecifiedFigure.PenColor, SpecifiedFigure.PenWidth);
+                DrawSpecifiedFigure();
+            }
         }
 
         private void form_graphic_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (e.KeyChar == 26)//ctrl+z && state != State.init
+            if (e.KeyChar == 26 && (UndoFiguresCount > 0))//ctrl+z
             {
                 //swap(ref Bmp, ref BmpStore);
-                DrawCancel();
+                Undo();
                 Graph = Graphics.FromImage(Bmp);
-
-
+                PB.Image = Bmp;
+            }
+            if (e.KeyChar == 25 && (RedoFiguresCount > 0))//ctrl+y
+            {
+                //swap(ref Bmp, ref BmpStore);
+                Redo();
+                Graph = Graphics.FromImage(Bmp);
                 PB.Image = Bmp;
             }
         }

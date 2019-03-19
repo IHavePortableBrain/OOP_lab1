@@ -12,20 +12,24 @@ namespace lab1_v2
     [Serializable]
     public class Figure
     {
+        //[NonSerialized]
         readonly public static uint MaxPointCount = 20;
+        readonly public static float DefaultPenWidth = 3;
+        readonly public static Color DefaultPenColor = Color.Black;
+        
+
         public uint PointCount;
+        public DrawMode DrawMode;
         public PointF[] PointFs = new PointF[MaxPointCount];
         
-        private Color PenColor;
-        private float PenWidth;
-        [NonSerialized]
-        private Pen BorderPen;
-        public Pen Pen { set { BorderPen = value; PenColor = BorderPen.Color; PenWidth = BorderPen.Width; } get { return BorderPen; } } 
-        public DrawMode DrawMode; 
+        public Color PenColor { get; protected set; }
+        public float PenWidth { get; protected set; }
+        
 
-        protected internal Figure(Pen pen)
+        protected  internal Figure()
         {
-            Pen = pen;
+            PenColor = DefaultPenColor;
+            PenWidth = DefaultPenWidth;
             DrawMode = DrawMode.none;
             PointCount = 0;
         }
@@ -36,7 +40,6 @@ namespace lab1_v2
         }
         //before Modify specify PointFs  
         public virtual void Modify() {
-
             if (DrawMode == DrawMode.shift)//обращение за границу бмп может быть айайай?
             {
                 float Width = PointFs[1].X - PointFs[0].X,
@@ -48,22 +51,24 @@ namespace lab1_v2
             }
         }
         //before drawing specify PointFs  
-        public virtual void Draw(Graphics graph) { }//;
+        public virtual void Draw(Graphics graph, Pen Pen) { }//;
     }
 
     [Serializable]
     public sealed class MyLine : Figure
     {
-        public MyLine(Pen pen) : base(pen)
+
+        public MyLine() : base()
         {
 
         }
-
-        public override void Draw(Graphics graph)
+        public override void Draw(Graphics graph, Pen Pen)
         {
+            PenColor = Pen.Color;
+            PenWidth = Pen.Width;
             if (PointCount < 2)
                 throw new InvalidOperationException();
-            graph.DrawLine(this.Pen, PointFs[0], PointFs[1]);
+            graph.DrawLine(Pen, PointFs[0], PointFs[1]);
         }
     }
 
@@ -71,12 +76,16 @@ namespace lab1_v2
     public class MyEllipse : Figure
     {
         public float Width, Height;
-        public MyEllipse(Pen pen) : base(pen)
+
+        public MyEllipse() : base()
         {
 
         }
-        public override void Draw(Graphics graph)
+
+        public override void Draw(Graphics graph, Pen Pen)
         {
+            PenColor = Pen.Color;
+            PenWidth = Pen.Width;
             if (PointCount < 2)
                 throw new InvalidOperationException();
             Width = PointFs[1].X - PointFs[0].X;
@@ -88,12 +97,14 @@ namespace lab1_v2
     [Serializable]
     public sealed class MyCurve : Figure
     {
-        public MyCurve(Pen pen) : base(pen)
+        public MyCurve() : base()
         {
 
         }
-        public override void Draw(Graphics graph)
+        public override void Draw(Graphics graph, Pen Pen)
         {
+            PenColor = Pen.Color;
+            PenWidth = Pen.Width;
             if (PointCount < 2)
                 throw new InvalidOperationException();
 
@@ -107,11 +118,10 @@ namespace lab1_v2
     public sealed class MyRectangle : Figure
     {
         public float Width, Height;
-        public MyRectangle(Pen pen) : base(pen)
+        public MyRectangle() : base()
         {
 
         }
-
 
         public override void Normalize()
         {
@@ -132,8 +142,10 @@ namespace lab1_v2
             }
         }
 
-        public override void Draw(Graphics graph)
+        public override void Draw(Graphics graph, Pen Pen)
         {
+            PenColor = Pen.Color;
+            PenWidth = Pen.Width;
             if (PointCount < 2)
                 throw new InvalidOperationException();
             //Normalize();
