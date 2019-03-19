@@ -17,16 +17,14 @@ using System.Threading;
 // todo
 // 2. correct naming
 // 3. get rid of cases and switches for shapes
-// 4.ctrlz  и ctrly файлы сериализации. при сохранении рисунка сохраняется ctrlz файл.
-//переписать объекты так чтобы была в них достаточная инфа для повторного рисования.
-//и pen  тоже сохраняй
 //5. баг если не отжимать лкм в пределах пб?
 // 6. баг рисование курвой после очистки
 //7. рисование при невыбранной фигуре
-//8. pen глоабльную убрать.
+//9 redo и undo не меняет состояние панели выбранной фигуры
 // ask
 //1. как свапать переменные закрываемые свойствами?(передать как ref)
 //2. Общее начало виртуального(абстрактного) метода у потомков?.
+//3. как зная обявленные классы
 namespace lab1_v2
 {
     public partial class form_graphic : Form
@@ -37,10 +35,10 @@ namespace lab1_v2
         Figure SpecifiedFigure = null;
         
 
-        private const string CtrlZFileName = "ctrlz.dat";
-        private const string CtrlYFileName = "ctrly.dat";
-        FileStream UndoFile = new FileStream(CtrlZFileName, FileMode.Create);
-        FileStream RedoFile = new FileStream(CtrlYFileName, FileMode.Create);
+        private const string UndoFileName = "ctrlz.dat";
+        private const string RedoFileName = "ctrly.dat";
+        FileStream UndoFile = new FileStream(UndoFileName, FileMode.Create);
+        FileStream RedoFile = new FileStream(RedoFileName, FileMode.Create);
         BinaryFormatter Formatter = new BinaryFormatter();
         UInt32 UndoFiguresCount = 0;
         UInt32 RedoFiguresCount = 0;
@@ -61,12 +59,8 @@ namespace lab1_v2
             SpecifiedFigure.PointCount = 0;
             Pen.Color = colorDialog.Color;
             Pen.Width = (float)numericUpDown1.Value;
-           // if (SpecifiedFigure != null) 
-                
-                //Pen = SpecifiedFigure.Pen;
 
             state = State.init;
-
             if (LVfigures.SelectedIndices.Count > 0)
             {
                 enFig = (EnFig)LVfigures.SelectedIndices[0];
@@ -120,6 +114,13 @@ namespace lab1_v2
             //BmpStore.Dispose(); 
             if (Graph != null)
             {
+                UndoFile.Dispose();
+                RedoFile.Dispose();
+                UndoFile = new FileStream(UndoFileName, FileMode.Create);
+                RedoFile = new FileStream(RedoFileName, FileMode.Create);
+                UndoFiguresCount = 0;
+                RedoFiguresCount = 0;
+
                 Graph.Clear(Color.White);
                 SpecifiedFigure.PointCount = 0;
             }
@@ -180,17 +181,18 @@ namespace lab1_v2
             {
                 Graph.Clear(Color.White);
             }
-
             UndoFile.Position = 0;
-            Formatter.Serialize(RedoFile, Formatter.Deserialize(UndoFile));
             UndoFiguresCount--;
-            RedoFiguresCount++;
             for (int i = 0; i < UndoFiguresCount; i++)
             {
                 SpecifiedFigure = (Figure)Formatter.Deserialize(UndoFile);
                 Pen = new Pen(SpecifiedFigure.PenColor, SpecifiedFigure.PenWidth);
                 DrawSpecifiedFigure();
             }
+            Formatter.Serialize(RedoFile, Formatter.Deserialize(UndoFile));
+            RedoFiguresCount++;
+            RedoFile.Flush();
+            UndoFile.Flush();
         }
 
         private void Redo()
@@ -200,31 +202,35 @@ namespace lab1_v2
             {
                 Graph.Clear(Color.White);
             }
-
             RedoFile.Position = 0;
-            Formatter.Serialize(UndoFile, Formatter.Deserialize(RedoFile));
-            UndoFiguresCount++;
-            RedoFiguresCount--;
             for (int i = 0; i < RedoFiguresCount; i++)
             {
                 SpecifiedFigure = (Figure)Formatter.Deserialize(RedoFile);
+            }
+            Formatter.Serialize(UndoFile, SpecifiedFigure);
+            RedoFiguresCount--;
+            UndoFiguresCount++;
+            UndoFile.Position = 0;
+            for (int i = 0; i < UndoFiguresCount; i++)
+            {
+                SpecifiedFigure = (Figure)Formatter.Deserialize(UndoFile);
                 Pen = new Pen(SpecifiedFigure.PenColor, SpecifiedFigure.PenWidth);
                 DrawSpecifiedFigure();
             }
+            RedoFile.Flush();
+            UndoFile.Flush();
         }
 
         private void form_graphic_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 26 && (UndoFiguresCount > 0))//ctrl+z
             {
-                //swap(ref Bmp, ref BmpStore);
                 Undo();
                 Graph = Graphics.FromImage(Bmp);
                 PB.Image = Bmp;
             }
             if (e.KeyChar == 25 && (RedoFiguresCount > 0))//ctrl+y
             {
-                //swap(ref Bmp, ref BmpStore);
                 Redo();
                 Graph = Graphics.FromImage(Bmp);
                 PB.Image = Bmp;
