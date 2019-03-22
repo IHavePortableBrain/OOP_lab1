@@ -28,11 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(form_graphic));
             this.PB = new System.Windows.Forms.PictureBox();
-            this.LVfigures = new System.Windows.Forms.ListView();
-            this.ImgList = new System.Windows.Forms.ImageList(this.components);
             this.btnClear = new System.Windows.Forms.Button();
             this.btnColor = new System.Windows.Forms.Button();
             this.colorDialog = new System.Windows.Forms.ColorDialog();
@@ -56,28 +52,6 @@
             this.PB.TabStop = false;
             this.PB.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PB_MouseDown);
             this.PB.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PB_MouseMove);
-            // 
-            // LVfigures
-            // 
-            this.LVfigures.LargeImageList = this.ImgList;
-            this.LVfigures.Location = new System.Drawing.Point(844, 2);
-            this.LVfigures.MultiSelect = false;
-            this.LVfigures.Name = "LVfigures";
-            this.LVfigures.Size = new System.Drawing.Size(406, 61);
-            this.LVfigures.SmallImageList = this.ImgList;
-            this.LVfigures.TabIndex = 5;
-            this.LVfigures.TileSize = new System.Drawing.Size(200, 200);
-            this.LVfigures.UseCompatibleStateImageBehavior = false;
-            this.LVfigures.SelectedIndexChanged += new System.EventHandler(this.LVfigures_SelectedIndexChanged);
-            // 
-            // ImgList
-            // 
-            this.ImgList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("ImgList.ImageStream")));
-            this.ImgList.TransparentColor = System.Drawing.Color.Transparent;
-            this.ImgList.Images.SetKeyName(0, "curve.png");
-            this.ImgList.Images.SetKeyName(1, "ellipse.png");
-            this.ImgList.Images.SetKeyName(2, "line.png");
-            this.ImgList.Images.SetKeyName(3, "rect.png");
             // 
             // btnClear
             // 
@@ -142,7 +116,6 @@
             this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.btnColor);
             this.Controls.Add(this.btnClear);
-            this.Controls.Add(this.LVfigures);
             this.Controls.Add(this.PB);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
@@ -160,8 +133,6 @@
 
         #endregion
         private System.Windows.Forms.PictureBox PB;
-        private System.Windows.Forms.ListView LVfigures;
-        private System.Windows.Forms.ImageList ImgList;
         private System.Windows.Forms.Button btnClear;
         private System.Windows.Forms.Button btnColor;
         private System.Windows.Forms.ColorDialog colorDialog;

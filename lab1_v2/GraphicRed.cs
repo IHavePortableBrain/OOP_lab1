@@ -7,11 +7,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 
 // todo
+//ДЕСЕРИАЛИЗАЦИЯ НЕ УДАЛЯЕТ СЕРИЮ ИЗ ФАЙЛА!!!
 //5. баг если не отжимать лкм в пределах пб?
-// 6. баг рисование курвой после очистки
-//7. рисование при невыбранной фигуре
 //9 redo и undo не меняет состояние панели выбранной фигуры
-//10. не удалять фигуру после рисования а количество заданных точек менять
 //11. баг тянущаяся курва сменить фигуру
 // ask
 //1. как свапать переменные закрываемые свойствами?(передать как ref)
@@ -44,33 +42,17 @@ namespace lab1_v2
             LoadFigures();
         }
 
-        private void LVfigures_SelectedIndexChanged(object sender, EventArgs e)
+        private void LoadFigures()
         {
-            //specifiedFigure.pointCount = 0;
-            //pen.Color = colorDialog.Color;
-            //pen.Width = (float)numericUpDown1.Value;
+            Assembly asm = Assembly.GetExecutingAssembly();
 
-            //state = State.init;
-            //if (LVfigures.SelectedIndices.Count > 0)
-            //{
-            //    enFig = (EnFig)LVfigures.SelectedIndices[0];
-
-            //    switch (enFig)
-            //    {
-            //        case EnFig.curve:
-            //            specifiedFigure = new MyCurve();
-            //            break;
-            //        case EnFig.ellipse:
-            //            specifiedFigure = new MyEllipse();
-            //            break;
-            //        case EnFig.line:
-            //            specifiedFigure = new MyLine();
-            //            break;
-            //        case EnFig.rect:
-            //            specifiedFigure = new MyRectangle();
-            //            break;
-            //    }
-            //}
+            foreach (Type type in asm.GetTypes())
+            {
+                if ((type.Namespace == "lab1_v2.Figures") && (type.GetInterface("IGUIIcon") != null))
+                {
+                    FiguresListBox.Items.Add(type);
+                }
+            }
         }
 
         private void GetFigureAndPen()
@@ -82,6 +64,10 @@ namespace lab1_v2
                 Type type = FiguresListBox.SelectedItem as Type;
                 specifiedFigure = (Figure)Activator.CreateInstance(type);
                 specifiedFigure.pointCount = 0;
+            }
+            else
+            {
+                throw new MissingMemberException();
             }
         }
 
@@ -104,29 +90,14 @@ namespace lab1_v2
             undoFile.Flush();
         }
 
-        private void LoadFigures()
-        {
-            Assembly asm = Assembly.GetExecutingAssembly();
-
-            foreach (Type type in asm.GetTypes())
-            {
-                if ((type.Namespace == "lab1_v2.Figures") && (type.GetInterface("IGUIIcon") != null))
-                {
-                    FiguresListBox.Items.Add(type);
-                }
-            }
-            //FiguresListBox.SelectedIndex = 0;
-            //LVfigures.Items.Insert(LVfigures.Items.Count, new ListViewItem());
-        }
-
         private void Form_graphic_Load(object sender, EventArgs e)
         {
             PB.Height = 1200;//костыль показать;
             PB.Width = 599;
             bmp = new Bitmap(PB.Height, PB.Width);
             graph = Graphics.FromImage(bmp);
-            specifiedFigure = new MyLine();
-            pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
+            pen = new Pen(Figure.DefaultPenColor, Figure.DefaultPenWidth);
+            FiguresListBox.SelectedIndex = 0;
         }
 
         private void ClearFormCanvas()
@@ -219,7 +190,9 @@ namespace lab1_v2
                 pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
                 DrawSpecifiedFigure();
             }
+            long newLength = undoFile.Position;
             formatter.Serialize(redoFile, formatter.Deserialize(undoFile));
+            undoFile.SetLength(newLength);
             redoFiguresCount++;
             redoFile.Flush();
             undoFile.Flush();
@@ -234,11 +207,14 @@ namespace lab1_v2
                 graph.Clear(Color.White);
             }
             redoFile.Position = 0;
-            for (int i = 0; i < redoFiguresCount; i++)
+            for (int i = 0; i < redoFiguresCount - 1; i++)
             {
                 specifiedFigure = (Figure)formatter.Deserialize(redoFile);
             }
-            formatter.Serialize(undoFile, specifiedFigure);
+            long newLength = redoFile.Position;
+            formatter.Serialize(undoFile, formatter.Deserialize(redoFile));
+            redoFile.SetLength(newLength);
+            undoFile.Flush();
             redoFiguresCount--;
             undoFiguresCount++;
             undoFile.Position = 0;
