@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 namespace lab1_v2.Figures
 {
     [Serializable]
-    public class MyEllipse : Figure
+    public class MyEllipse : Figure, IGUIIcon
     {
+        private const string IconPath = "icons\\ellipse.png";
         public float width, height;
 
         public MyEllipse() : base()
@@ -23,6 +24,11 @@ namespace lab1_v2.Figures
             width = pointFs[1].X - pointFs[0].X;
             height = pointFs[1].Y - pointFs[0].Y;
             graph.DrawEllipse(pen, pointFs[0].X, pointFs[0].Y, width, height);
+        }
+
+        public Icon GetIcon()
+        {
+            return new Icon(IconPath);
         }
     }
 }

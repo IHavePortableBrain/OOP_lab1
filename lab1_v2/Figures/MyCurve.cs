@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 namespace lab1_v2.Figures
 {
     [Serializable]
-    public sealed class MyCurve : Figure
+    public sealed class MyCurve : Figure, IManyPointFigure, IGUIIcon
     {
+        private const string IconPath = "icons\\curve.png";
+
         public MyCurve() : base()
         {
 
@@ -20,6 +22,11 @@ namespace lab1_v2.Figures
             PointF[] toDraw = new PointF[pointCount];
             Array.Copy(pointFs, toDraw, pointCount);
             graph.DrawCurve(pen, toDraw);
+        }
+
+        public Icon GetIcon()
+        {
+            return new Icon(IconPath);
         }
     }
 }

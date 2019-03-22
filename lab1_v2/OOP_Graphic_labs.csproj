@@ -48,6 +48,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Figures\IGUIIcon.cs" />
+    <Compile Include="Figures\IMultipointFigure.cs" />
     <Compile Include="Figures\MyEllipse.cs" />
     <Compile Include="Figures\MyCurve.cs" />
     <Compile Include="Figures\MyRectangle.cs" />

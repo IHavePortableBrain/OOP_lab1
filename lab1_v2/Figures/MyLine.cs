@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 namespace lab1_v2.Figures
 {
     [Serializable]
-    public sealed class MyLine : Figure
+    public sealed class MyLine : Figure, IGUIIcon
     {
+        private const string IconPath = "icons\\line.png";
 
         public MyLine() : base()
         {
@@ -19,6 +20,11 @@ namespace lab1_v2.Figures
         {
             base.Draw(graph, pen);
             graph.DrawLine(pen, pointFs[0], pointFs[1]);
+        }
+
+        public Icon GetIcon()
+        {
+            return new Icon(IconPath);
         }
     }
 }

@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 namespace lab1_v2.Figures
 {
     [Serializable]
-    public sealed class MyRectangle : Figure
+    public sealed class MyRectangle : Figure, IGUIIcon
     {
+        private const string IconPath = "icons\\rect.png";
         public float width, height;
         public MyRectangle() : base()
         {
@@ -43,6 +44,11 @@ namespace lab1_v2.Figures
             width = Math.Abs(pointFs[1].X - pointFs[0].X);
             height = Math.Abs(pointFs[1].Y - pointFs[0].Y);
             graph.DrawRectangle(pen, Math.Min(pointFs[0].X, pointFs[1].X), Math.Min(pointFs[0].Y, pointFs[1].Y), width, height);
+        }
+
+        public Icon GetIcon()
+        {
+            return new Icon(IconPath);
         }
     }
 
