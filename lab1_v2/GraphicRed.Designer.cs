@@ -56,7 +56,6 @@
             this.PB.TabStop = false;
             this.PB.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PB_MouseDown);
             this.PB.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PB_MouseMove);
-            this.PB.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PB_MouseUp);
             // 
             // LVfigures
             // 

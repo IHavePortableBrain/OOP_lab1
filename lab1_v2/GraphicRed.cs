@@ -7,8 +7,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 
 // todo
-// 2. correct naming
-// 3. get rid of cases and switches for shapes
 //5. баг если не отжимать лкм в пределах пб?
 // 6. баг рисование курвой после очистки
 //7. рисование при невыбранной фигуре
@@ -37,8 +35,7 @@ namespace lab1_v2
         private UInt32 undoFiguresCount = 0;
         private UInt32 redoFiguresCount = 0;
 
-        private enum State : int
-        { draw, pending };
+        private enum State : int { draw, pending };
         private State state = State.pending;
 
         public form_graphic()
@@ -149,7 +146,7 @@ namespace lab1_v2
             redoFile = new FileStream(RedoFileName, FileMode.Create);
             undoFiguresCount = 0;
             redoFiguresCount = 0;
-            
+
             ClearFormCanvas();
         }
 
@@ -174,7 +171,7 @@ namespace lab1_v2
                 GetFigureAndPen();
                 state = State.draw;
             }
-            
+
             if (specifiedFigure.pointCount < Figure.MaxPointCount - 1)
             {
                 specifiedFigure.pointFs[specifiedFigure.pointCount++] = e.Location;
@@ -191,7 +188,7 @@ namespace lab1_v2
                 if (!(specifiedFigure is IManyPointFigure))
                 {
                     StopDrawing();
-                }                  
+                }
             }
         }
 
@@ -204,20 +201,6 @@ namespace lab1_v2
                 DrawSpecifiedFigure();
                 specifiedFigure.pointCount--;
             }
-        }
-
-        private void PB_MouseUp(object sender, MouseEventArgs e)
-        {
-            //if (state == State.draw)
-            //{
-            //    specifiedFigure.pointFs[1] = e.Location;
-            //    DrawAndSerializeSpecifiedFigure();
-            //    if (!(specifiedFigure is MyCurve))
-            //    {
-            //        specifiedFigure.pointCount = 0;
-            //        state = State.pending;
-            //    }
-            //}
         }
 
         private void Undo()
@@ -285,7 +268,6 @@ namespace lab1_v2
                     state = State.pending;
                     specifiedFigure.pointCount = 0;
                 }
-
             }
             else
             if (e.KeyChar == 25 && (redoFiguresCount > 0))//ctrl+y
@@ -294,7 +276,6 @@ namespace lab1_v2
                 graph = Graphics.FromImage(bmp);
                 PB.Image = bmp;
             }
-
         }
 
         private void Form_graphic_KeyUp(object sender, KeyEventArgs e)
@@ -311,8 +292,6 @@ namespace lab1_v2
             if (e.KeyCode == Keys.Q)
                 StopDrawing();
         }
-
-        //_____________________________________________________
 
         private void RestoreBmp()
         {

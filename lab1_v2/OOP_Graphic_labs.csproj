@@ -63,7 +63,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="serialize.cs" />
     <Compile Include="StdOps.cs" />
     <EmbeddedResource Include="GraphicRed.resx">
       <DependentUpon>GraphicRed.cs</DependentUpon>

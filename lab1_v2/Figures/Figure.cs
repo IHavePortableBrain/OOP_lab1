@@ -13,7 +13,7 @@ namespace lab1_v2
     public class Figure
     {
         //[NonSerialized]
-        readonly public static uint MaxPointCount = 20;//делай кратно двум
+        readonly public static uint MaxPointCount = 20;
         readonly public static uint MinDrawPointCount = 2;
         readonly public static float DefaultPenWidth = 3;
         readonly public static Color DefaultPenColor = Color.Black;
