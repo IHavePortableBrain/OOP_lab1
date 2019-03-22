@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Windows.Shapes;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using lab1_v2.Figures;
 
 
 using System.Threading;
@@ -23,25 +24,24 @@ using System.Threading;
 //9 redo и undo не меняет состояние панели выбранной фигуры
 // ask
 //1. как свапать переменные закрываемые свойствами?(передать как ref)
-//2. Общее начало виртуального(абстрактного) метода у потомков?.
 //3. как зная обявленные классы
 namespace lab1_v2
 {
     public partial class form_graphic : Form
     {
-        Bitmap Bmp, BmpStore;
-        Graphics Graph;
-        Pen Pen;
-        Figure SpecifiedFigure = null;
+        Bitmap bmp, bmpStore;
+        Graphics graph;
+        Pen pen;
+        Figure specifiedFigure = null;
         
 
         private const string UndoFileName = "ctrlz.dat";
         private const string RedoFileName = "ctrly.dat";
-        FileStream UndoFile = new FileStream(UndoFileName, FileMode.Create);
-        FileStream RedoFile = new FileStream(RedoFileName, FileMode.Create);
-        BinaryFormatter Formatter = new BinaryFormatter();
-        UInt32 UndoFiguresCount = 0;
-        UInt32 RedoFiguresCount = 0;
+        FileStream undoFile = new FileStream(UndoFileName, FileMode.Create);
+        FileStream redoFile = new FileStream(RedoFileName, FileMode.Create);
+        BinaryFormatter formatter = new BinaryFormatter();
+        UInt32 undoFiguresCount = 0;
+        UInt32 redoFiguresCount = 0;
 
         enum EnFig : int { curve, ellipse, line, rect };
         enum State : int { draw, wait, init };
@@ -56,9 +56,9 @@ namespace lab1_v2
 
         private void LVfigures_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SpecifiedFigure.PointCount = 0;
-            Pen.Color = colorDialog.Color;
-            Pen.Width = (float)numericUpDown1.Value;
+            specifiedFigure.pointCount = 0;
+            pen.Color = colorDialog.Color;
+            pen.Width = (float)numericUpDown1.Value;
 
             state = State.init;
             if (LVfigures.SelectedIndices.Count > 0)
@@ -68,16 +68,16 @@ namespace lab1_v2
                 switch (enFig)
                 {
                     case EnFig.curve:
-                        SpecifiedFigure = new MyCurve();
+                        specifiedFigure = new MyCurve();
                         break;
                     case EnFig.ellipse:
-                        SpecifiedFigure = new MyEllipse();
+                        specifiedFigure = new MyEllipse();
                         break;
                     case EnFig.line:
-                        SpecifiedFigure = new MyLine();
+                        specifiedFigure = new MyLine();
                         break;
                     case EnFig.rect:
-                        SpecifiedFigure = new MyRectangle();
+                        specifiedFigure = new MyRectangle();
                         break;
                 }
             }
@@ -85,9 +85,9 @@ namespace lab1_v2
 
         private void DrawSpecifiedFigure()
         {
-            SpecifiedFigure.Modify();
-            SpecifiedFigure.Draw(Graph, Pen);
-            PB.Image = Bmp;
+            specifiedFigure.Modify();
+            specifiedFigure.Draw(graph, pen);
+            PB.Image = bmp;
         }
 
         private void LoadFigures()
@@ -100,29 +100,29 @@ namespace lab1_v2
         {
             PB.Height = 1200;//костыль показать, why drawing metod is sepetated from class; попросить научить пользоваться отладчиком по памяти
             PB.Width = 599;
-            Bmp = new Bitmap(PB.Height, PB.Width);
-            Graph = Graphics.FromImage(Bmp);
-            SpecifiedFigure = new MyLine();
-            Pen = new Pen(SpecifiedFigure.PenColor, SpecifiedFigure.PenWidth);
+            bmp = new Bitmap(PB.Height, PB.Width);
+            graph = Graphics.FromImage(bmp);
+            specifiedFigure = new MyLine();
+            pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
             LoadFigures();
         }
 
         private void btnClear_Click(object sender, EventArgs e)
         {
-            state = State.wait;
+            state = State.init;
             PB.Image = null;
             //BmpStore.Dispose(); 
-            if (Graph != null)
+            if (graph != null)
             {
-                UndoFile.Dispose();
-                RedoFile.Dispose();
-                UndoFile = new FileStream(UndoFileName, FileMode.Create);
-                RedoFile = new FileStream(RedoFileName, FileMode.Create);
-                UndoFiguresCount = 0;
-                RedoFiguresCount = 0;
+                undoFile.Dispose();
+                redoFile.Dispose();
+                undoFile = new FileStream(UndoFileName, FileMode.Create);
+                redoFile = new FileStream(RedoFileName, FileMode.Create);
+                undoFiguresCount = 0;
+                redoFiguresCount = 0;
 
-                Graph.Clear(Color.White);
-                SpecifiedFigure.PointCount = 0;
+                graph.Clear(Color.White);
+                specifiedFigure.pointCount = 0;
             }
         }
 
@@ -131,19 +131,19 @@ namespace lab1_v2
             if (state == State.wait && enFig == EnFig.curve)
             {
                 restoreBmp();
-                if (SpecifiedFigure.PointCount == Figure.MaxPointCount)
-                    SpecifiedFigure.PointCount = 0;
-                SpecifiedFigure.PointFs[SpecifiedFigure.PointCount++] = e.Location;
-                if (SpecifiedFigure.PointCount > 1)
+                if (specifiedFigure.pointCount == Figure.MaxPointCount)
+                    specifiedFigure.pointCount = 0;
+                specifiedFigure.pointFs[specifiedFigure.pointCount++] = e.Location;
+                if (specifiedFigure.pointCount > 1)
                     DrawAndSerializeSpecifiedFigure();
-                PB.Image = Bmp;
+                PB.Image = bmp;
             }
             else
             if (state == State.wait || state == State.init)
             {
-                BmpStore = Bmp.Clone(new System.Drawing.Rectangle(0, 0, Bmp.Width, Bmp.Height), Bmp.PixelFormat);
-                SpecifiedFigure.PointFs[SpecifiedFigure.PointCount++] = e.Location;
-                SpecifiedFigure.PointFs[SpecifiedFigure.PointCount++] = e.Location;
+                bmpStore = bmp.Clone(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height), bmp.PixelFormat);
+                specifiedFigure.pointFs[specifiedFigure.pointCount++] = e.Location;
+                specifiedFigure.pointFs[specifiedFigure.pointCount++] = e.Location;
                 state = State.draw;
             }
 
@@ -152,20 +152,20 @@ namespace lab1_v2
         private void DrawAndSerializeSpecifiedFigure()
         {
             DrawSpecifiedFigure();
-            Formatter.Serialize(UndoFile, SpecifiedFigure);
-            UndoFiguresCount++;
-            UndoFile.Flush();
+            formatter.Serialize(undoFile, specifiedFigure);
+            undoFiguresCount++;
+            undoFile.Flush();
         }
 
         private void PB_MouseUp(object sender, MouseEventArgs e)
         {
             if (state == State.draw)
             {
-                SpecifiedFigure.PointFs[1] = e.Location;
+                specifiedFigure.pointFs[1] = e.Location;
                 DrawAndSerializeSpecifiedFigure();
                 if (enFig != EnFig.curve)
                 {
-                    SpecifiedFigure.PointCount = 0;
+                    specifiedFigure.pointCount = 0;
                     state = State.init;
                 }
                 else
@@ -177,76 +177,76 @@ namespace lab1_v2
         private void Undo()
         {
             PB.Image = null;
-            if (Graph != null)
+            if (graph != null)
             {
-                Graph.Clear(Color.White);
+                graph.Clear(Color.White);
             }
-            UndoFile.Position = 0;
-            UndoFiguresCount--;
-            for (int i = 0; i < UndoFiguresCount; i++)
+            undoFile.Position = 0;
+            undoFiguresCount--;
+            for (int i = 0; i < undoFiguresCount; i++)
             {
-                SpecifiedFigure = (Figure)Formatter.Deserialize(UndoFile);
-                Pen = new Pen(SpecifiedFigure.PenColor, SpecifiedFigure.PenWidth);
+                specifiedFigure = (Figure)formatter.Deserialize(undoFile);
+                pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
                 DrawSpecifiedFigure();
             }
-            Formatter.Serialize(RedoFile, Formatter.Deserialize(UndoFile));
-            RedoFiguresCount++;
-            RedoFile.Flush();
-            UndoFile.Flush();
+            formatter.Serialize(redoFile, formatter.Deserialize(undoFile));
+            redoFiguresCount++;
+            redoFile.Flush();
+            undoFile.Flush();
         }
 
         private void Redo()
         {
             PB.Image = null;
-            if (Graph != null)
+            if (graph != null)
             {
-                Graph.Clear(Color.White);
+                graph.Clear(Color.White);
             }
-            RedoFile.Position = 0;
-            for (int i = 0; i < RedoFiguresCount; i++)
+            redoFile.Position = 0;
+            for (int i = 0; i < redoFiguresCount; i++)
             {
-                SpecifiedFigure = (Figure)Formatter.Deserialize(RedoFile);
+                specifiedFigure = (Figure)formatter.Deserialize(redoFile);
             }
-            Formatter.Serialize(UndoFile, SpecifiedFigure);
-            RedoFiguresCount--;
-            UndoFiguresCount++;
-            UndoFile.Position = 0;
-            for (int i = 0; i < UndoFiguresCount; i++)
+            formatter.Serialize(undoFile, specifiedFigure);
+            redoFiguresCount--;
+            undoFiguresCount++;
+            undoFile.Position = 0;
+            for (int i = 0; i < undoFiguresCount; i++)
             {
-                SpecifiedFigure = (Figure)Formatter.Deserialize(UndoFile);
-                Pen = new Pen(SpecifiedFigure.PenColor, SpecifiedFigure.PenWidth);
+                specifiedFigure = (Figure)formatter.Deserialize(undoFile);
+                pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
                 DrawSpecifiedFigure();
             }
-            RedoFile.Flush();
-            UndoFile.Flush();
+            redoFile.Flush();
+            undoFile.Flush();
         }
 
         private void form_graphic_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (e.KeyChar == 26 && (UndoFiguresCount > 0))//ctrl+z
+            if (e.KeyChar == 26 && (undoFiguresCount > 0))//ctrl+z
             {
                 Undo();
-                Graph = Graphics.FromImage(Bmp);
-                PB.Image = Bmp;
+                graph = Graphics.FromImage(bmp);
+                PB.Image = bmp;
             }
-            if (e.KeyChar == 25 && (RedoFiguresCount > 0))//ctrl+y
+            if (e.KeyChar == 25 && (redoFiguresCount > 0))//ctrl+y
             {
                 Redo();
-                Graph = Graphics.FromImage(Bmp);
-                PB.Image = Bmp;
+                graph = Graphics.FromImage(bmp);
+                PB.Image = bmp;
             }
         }
 
         private void form_graphic_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.ShiftKey)
-                SpecifiedFigure.DrawMode = DrawMode.none;
+                specifiedFigure.DrawMode = DrawMode.none;
         }
 
         private void form_graphic_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.ShiftKey)
-                SpecifiedFigure.DrawMode = DrawMode.shift;
+                specifiedFigure.DrawMode = DrawMode.shift;
         }
 
         private void PB_MouseMove(object sender, MouseEventArgs e)
@@ -254,7 +254,7 @@ namespace lab1_v2
             if (state == State.draw)
             {
                 restoreBmp();
-                SpecifiedFigure.PointFs[1] = e.Location;
+                specifiedFigure.pointFs[1] = e.Location;
                 DrawSpecifiedFigure();
             }
         }
@@ -263,23 +263,23 @@ namespace lab1_v2
 
         private void restoreBmp()
         {
-            Bmp.Dispose();
-            Bmp = BmpStore.Clone(new System.Drawing.Rectangle(0, 0, BmpStore.Width, BmpStore.Height), BmpStore.PixelFormat);
-            Graph.Dispose();
-            Graph = Graphics.FromImage(Bmp);
+            bmp.Dispose();
+            bmp = bmpStore.Clone(new System.Drawing.Rectangle(0, 0, bmpStore.Width, bmpStore.Height), bmpStore.PixelFormat);
+            graph.Dispose();
+            graph = Graphics.FromImage(bmp);
         }
 
         private void btnColor_Click(object sender, EventArgs e)
         {
             colorDialog.ShowDialog();
-            Pen.Color = colorDialog.Color;
+            pen.Color = colorDialog.Color;
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
             try
             {
-                Pen.Width = (float)numericUpDown1.Value;
+                pen.Width = (float)numericUpDown1.Value;
             }
             catch (Exception)
             {
@@ -293,7 +293,7 @@ namespace lab1_v2
         {
             try
             {
-                Pen.Width = (float)numericUpDown1.Value;
+                pen.Width = (float)numericUpDown1.Value;
             }
             catch (Exception)
             {

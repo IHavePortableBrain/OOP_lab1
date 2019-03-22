@@ -48,7 +48,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Figure.cs" />
+    <Compile Include="Figures\MyEllipse.cs" />
+    <Compile Include="Figures\MyCurve.cs" />
+    <Compile Include="Figures\MyRectangle.cs" />
+    <Compile Include="Figures\MyLine.cs" />
+    <Compile Include="Figures\Figure.cs" />
     <Compile Include="GraphicRed.cs">
       <SubType>Form</SubType>
     </Compile>
