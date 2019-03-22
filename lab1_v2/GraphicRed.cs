@@ -11,9 +11,9 @@ using System.Windows.Forms;
 //5. баг если не отжимать лкм в пределах пб?
 //9 redo и undo не меняет состояние панели выбранной фигуры
 //11. баг тянущаяся курва сменить фигуру
+//12.mouse leave event + ctrl z
 // ask
 //1. как свапать переменные закрываемые свойствами?(передать как ref)
-//3. как зная обявленные классы
 //4.лайфхаки отладчика?
 
 namespace lab1_v2
@@ -172,6 +172,12 @@ namespace lab1_v2
                 DrawSpecifiedFigure();
                 specifiedFigure.pointCount--;
             }
+        }
+
+        private void PB_MouseLeave(object sender, EventArgs e)
+        {
+            specifiedFigure.pointCount++;//prev point value from mouse move event steel is in array[1]
+            StopDrawing();
         }
 
         private void Undo()

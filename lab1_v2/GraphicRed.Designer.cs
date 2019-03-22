@@ -51,6 +51,7 @@
             this.PB.TabIndex = 2;
             this.PB.TabStop = false;
             this.PB.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PB_MouseDown);
+            this.PB.MouseLeave += new System.EventHandler(this.PB_MouseLeave);
             this.PB.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PB_MouseMove);
             // 
             // btnClear
