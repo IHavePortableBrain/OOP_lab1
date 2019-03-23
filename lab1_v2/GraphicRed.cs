@@ -176,8 +176,11 @@ namespace lab1_v2
 
         private void PB_MouseLeave(object sender, EventArgs e)
         {
-            specifiedFigure.pointCount++;//prev point value from mouse move event steel is in array[1]
-            StopDrawing();
+            if (state == State.draw)
+            {
+                specifiedFigure.pointCount++;//prev point value from mouse move event steel is in array[1]
+                StopDrawing();
+            }
         }
 
         private void Undo()
