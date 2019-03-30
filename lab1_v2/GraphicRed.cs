@@ -12,9 +12,12 @@ using System.Windows.Forms;
 //9 redo и undo не меняет состояние панели выбранной фигуры
 //11. баг тянущаяся курва сменить фигуру
 //12.mouse leave event + ctrl z
+//!!!!13. нормальное сохранение.
+//4 лаба длл фигуры подгрузка.
 // ask
 //1. как свапать переменные закрываемые свойствами?(передать как ref)
 //4.лайфхаки отладчика?
+//5.отличие виртуального переопределения от простого перекрытия имени метода
 
 namespace lab1_v2
 {
@@ -42,6 +45,7 @@ namespace lab1_v2
             LoadFigures();
         }
 
+        //scan declared types and add to GUI those which can be drawed 
         private void LoadFigures()
         {
             Assembly asm = Assembly.GetExecutingAssembly();
@@ -55,6 +59,7 @@ namespace lab1_v2
             }
         }
 
+        //get specified parametrs of pen and figure and assign them
         private void GetFigureAndPen()
         {
             pen.Color = colorDialog.Color;
@@ -78,7 +83,7 @@ namespace lab1_v2
 
         private void DrawSpecifiedFigure()
         {
-            specifiedFigure.Modify();
+            specifiedFigure.Modify(); //apply drawing mods
             specifiedFigure.Draw(graph, pen);
             PB.Image = bmp;
         }
@@ -97,16 +102,17 @@ namespace lab1_v2
             bmp = new Bitmap(PB.Height, PB.Width);
             graph = Graphics.FromImage(bmp);
             pen = new Pen(Figure.DefaultPenColor, Figure.DefaultPenWidth);
-            FiguresListBox.SelectedIndex = 0;
+            FiguresListBox.SelectedIndex = 0;//initial figure pick
         }
 
-        private void ClearFormCanvas()
+        private void ClearPaintBoxCanvas()
         {
             PB.Image = null;
-            graph.Clear(Color.White);
+            //if (graph != null)
+                graph.Clear(Color.White);
         }
 
-        private void BtnClear_Click(object sender, EventArgs e)
+        private void ClearCanvasAndState()
         {
             state = State.pending;
             specifiedFigure.pointCount = 0;
@@ -118,7 +124,12 @@ namespace lab1_v2
             undoFiguresCount = 0;
             redoFiguresCount = 0;
 
-            ClearFormCanvas();
+            ClearPaintBoxCanvas();
+        }
+
+        private void BtnClear_Click(object sender, EventArgs e)
+        {
+            ClearCanvasAndState();
         }
 
         private void DrawAndSerializeSpecifiedFigure()
@@ -138,6 +149,7 @@ namespace lab1_v2
         {
             if (state == State.pending)
             {
+                //save picture
                 bmpStore = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), bmp.PixelFormat);
                 GetFigureAndPen();
                 state = State.draw;
@@ -168,7 +180,7 @@ namespace lab1_v2
             if (state == State.draw)
             {
                 RestoreBmp();
-                specifiedFigure.pointFs[specifiedFigure.pointCount++] = e.Location;//для curve не прокатит
+                specifiedFigure.pointFs[specifiedFigure.pointCount++] = e.Location;
                 DrawSpecifiedFigure();
                 specifiedFigure.pointCount--;
             }
@@ -178,28 +190,42 @@ namespace lab1_v2
         {
             if (state == State.draw)
             {
-                specifiedFigure.pointCount++;//prev point value from mouse move event steel is in array[1]
+                specifiedFigure.pointCount++;//prev point value from mouse move event steel is in array[pointCount + 1]
                 StopDrawing();
+            }
+        }
+
+        private void DrawAllUndoFiguresAndRefreshCount()
+        {
+            undoFiguresCount = 0;
+            undoFile.Seek(0L, SeekOrigin.Begin);
+            while (undoFile.Position < undoFile.Length)
+            {
+                specifiedFigure = (Figure)formatter.Deserialize(undoFile);
+                undoFiguresCount++;
+                pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
+                DrawSpecifiedFigure();
+            }
+        }
+
+        private void DrawUndoCountFigures()
+        {
+            for (int i = 0; i < undoFiguresCount; i++)//print undoFiguresCount - 1 serialized figures loop
+            {
+                specifiedFigure = (Figure)formatter.Deserialize(undoFile);
+                pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
+                DrawSpecifiedFigure();
             }
         }
 
         private void Undo()
         {
             state = State.pending;
-            PB.Image = null;
-            if (graph != null)
-            {
-                graph.Clear(Color.White);
-            }
+            ClearPaintBoxCanvas();
             undoFile.Position = 0;
             undoFiguresCount--;
-            for (int i = 0; i < undoFiguresCount; i++)
-            {
-                specifiedFigure = (Figure)formatter.Deserialize(undoFile);
-                pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
-                DrawSpecifiedFigure();
-            }
-            long newLength = undoFile.Position;
+            DrawUndoCountFigures();
+            long newLength = undoFile.Position;//move last serialized figure from undo to redo file
             formatter.Serialize(redoFile, formatter.Deserialize(undoFile));
             undoFile.SetLength(newLength);
             redoFiguresCount++;
@@ -210,29 +236,20 @@ namespace lab1_v2
         private void Redo()
         {
             state = State.pending;
-            PB.Image = null;
-            if (graph != null)
-            {
-                graph.Clear(Color.White);
-            }
+            ClearPaintBoxCanvas();
             redoFile.Position = 0;
-            for (int i = 0; i < redoFiguresCount - 1; i++)
+            for (int i = 0; i < redoFiguresCount - 1; i++) //skipping n - 1 redo figures loop
             {
                 specifiedFigure = (Figure)formatter.Deserialize(redoFile);
             }
-            long newLength = redoFile.Position;
+            long newLength = redoFile.Position;//move last serialized figure from redo to undo file
             formatter.Serialize(undoFile, formatter.Deserialize(redoFile));
             redoFile.SetLength(newLength);
             undoFile.Flush();
             redoFiguresCount--;
             undoFiguresCount++;
             undoFile.Position = 0;
-            for (int i = 0; i < undoFiguresCount; i++)
-            {
-                specifiedFigure = (Figure)formatter.Deserialize(undoFile);
-                pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
-                DrawSpecifiedFigure();
-            }
+            DrawUndoCountFigures();
             redoFile.Flush();
             undoFile.Flush();
         }
@@ -249,7 +266,7 @@ namespace lab1_v2
                 }
                 else
                 {
-                    ClearFormCanvas();
+                    ClearPaintBoxCanvas();
                     state = State.pending;
                     specifiedFigure.pointCount = 0;
                 }
@@ -301,6 +318,35 @@ namespace lab1_v2
             catch (Exception)
             {
                 throw;
+            }
+        }
+
+        private void BtnSave_Click(object sender, EventArgs e)
+        {
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string saveUndoFiguresFile = saveFileDialog.FileName;
+                FileStream saveUndoFiguresStream = new FileStream(saveUndoFiguresFile, FileMode.Create);
+                undoFile.Seek(0L, SeekOrigin.Begin);
+                undoFile.CopyTo(saveUndoFiguresStream);
+                saveUndoFiguresFile = null;
+                saveUndoFiguresStream.Dispose();
+                MessageBox.Show(String.Format("Saved to {0}", saveFileDialog.FileName));
+            }
+        }
+
+        private void BtnLoad_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string openUndoFiguresFile = openFileDialog.FileName;
+                FileStream copyUndoFiguresStream = new FileStream(openUndoFiguresFile, FileMode.Open);
+                copyUndoFiguresStream.Seek(0L, SeekOrigin.Begin);
+                ClearCanvasAndState();
+                copyUndoFiguresStream.CopyTo(undoFile);
+                openUndoFiguresFile = null;
+                copyUndoFiguresStream.Dispose();
+                DrawAllUndoFiguresAndRefreshCount();
             }
         }
 

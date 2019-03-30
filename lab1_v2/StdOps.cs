@@ -8,7 +8,7 @@ namespace lab1_v2
 {
     class StdOps
     {
-        static public void swap<T>(ref T first, ref T second)
+        static public void Swap<T>(ref T first, ref T second)
         {
             T temp = first;
             first = second;

@@ -34,6 +34,10 @@
             this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.FiguresListBox = new System.Windows.Forms.ListBox();
+            this.btnSave = new System.Windows.Forms.Button();
+            this.btnLoad = new System.Windows.Forms.Button();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.PB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
@@ -108,11 +112,42 @@
             this.FiguresListBox.TabIndex = 9;
             this.FiguresListBox.SelectedIndexChanged += new System.EventHandler(this.FiguresListBox_SelectedIndexChanged);
             // 
+            // btnSave
+            // 
+            this.btnSave.Location = new System.Drawing.Point(844, 14);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(120, 47);
+            this.btnSave.TabIndex = 10;
+            this.btnSave.Text = "Save";
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
+            // 
+            // btnLoad
+            // 
+            this.btnLoad.Location = new System.Drawing.Point(970, 14);
+            this.btnLoad.Name = "btnLoad";
+            this.btnLoad.Size = new System.Drawing.Size(120, 47);
+            this.btnLoad.TabIndex = 11;
+            this.btnLoad.Text = "Load";
+            this.btnLoad.UseVisualStyleBackColor = true;
+            this.btnLoad.Click += new System.EventHandler(this.BtnLoad_Click);
+            // 
+            // openFileDialog
+            // 
+            this.openFileDialog.FileName = "openFileDialog1";
+            // 
+            // saveFileDialog
+            // 
+            this.saveFileDialog.DefaultExt = "dat";
+            this.saveFileDialog.Filter = "dat files (*.dat)|*.dat|All files (*.*)|*.*";
+            // 
             // form_graphic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1262, 673);
+            this.Controls.Add(this.btnLoad);
+            this.Controls.Add(this.btnSave);
             this.Controls.Add(this.FiguresListBox);
             this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.btnColor);
@@ -139,6 +174,10 @@
         private System.Windows.Forms.ColorDialog colorDialog;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.ListBox FiguresListBox;
+        private System.Windows.Forms.Button btnSave;
+        private System.Windows.Forms.Button btnLoad;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog;
     }
 }
 
