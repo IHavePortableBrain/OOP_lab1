@@ -28,6 +28,7 @@ namespace lab1_v2
         private Pen pen;
         private Figure specifiedFigure = null; //Figure dynamic
 
+        private const string LibPath = "..\\..\\Lib";
         private const string UndoFileName = "undo.dat";
         private const string RedoFileName = "redo.dat";
         private FileStream undoFile = new FileStream(UndoFileName, FileMode.Create);
@@ -68,12 +69,14 @@ namespace lab1_v2
             //    }
             //}
 
-            asm = Assembly.LoadFrom("..\\..\\..\\Figures\\bin\\Debug\\FiguresLib.dll");
-            foreach (Type type in asm.GetTypes())
-            {
-                if ((type.Namespace == "Figures") && (type.GetInterface("IGUIIcon") != null))
+            foreach (string filePath in Directory.GetFiles(LibPath)) { 
+                asm = Assembly.LoadFrom(filePath); //"..\\..\\..\\Figures\\bin\\Debug\\FiguresLib.dll"
+                foreach (Type type in asm.GetTypes())
                 {
-                    FiguresListBox.Items.Add(type);
+                    if ((type.Namespace == "Figures") && (type.GetInterface("IGUIIcon") != null))
+                    {
+                        FiguresListBox.Items.Add(type);
+                    }
                 }
             }
 
