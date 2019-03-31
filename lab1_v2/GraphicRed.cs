@@ -47,7 +47,8 @@ namespace lab1_v2
             bmp = new Bitmap(PB.Height, PB.Width);
             graph = Graphics.FromImage(bmp);
             pen = new Pen(Figure.DefaultPenColor, Figure.DefaultPenWidth);
-            FiguresListBox.SelectedIndex = 0;//initial figure pick
+            if (FiguresListBox.Items.Count > 0)
+                FiguresListBox.SelectedIndex = 0;//initial figure pick
         }
 
         public form_graphic()
