@@ -26,7 +26,7 @@ namespace lab1_v2
         private Bitmap bmp, bmpStore;
         private Graphics graph;
         private Pen pen;
-        private Figure specifiedFigure = null;
+        private Figure specifiedFigure = null; //Figure dynamic
 
         private const string UndoFileName = "undo.dat";
         private const string RedoFileName = "redo.dat";
@@ -60,15 +60,15 @@ namespace lab1_v2
         {
             Assembly asm = Assembly.GetExecutingAssembly();
 
-            foreach (Type type in asm.GetTypes())
-            {
-                if (((type.Namespace == "lab1_v2.Figures") || (type.Namespace == "Figures")) && (type.GetInterface("IGUIIcon") != null))
-                {
-                    FiguresListBox.Items.Add(type);
-                }
-            }
+            //foreach (Type type in asm.GetTypes())
+            //{
+            //    if (((type.Namespace == "lab1_v2.Figures") || (type.Namespace == "Figures")) && (type.GetInterface("IGUIIcon") != null))
+            //    {
+            //        FiguresListBox.Items.Add(type);
+            //    }
+            //}
 
-            asm = Assembly.LoadFrom("D:\\! 4 сем\\ООТПИСП\\лабы\\lab1\\lab1_v2\\Figures\\bin\\Debug\\Figures.dll");
+            asm = Assembly.LoadFrom("..\\..\\..\\Figures\\bin\\Debug\\FiguresLib.dll");
             foreach (Type type in asm.GetTypes())
             {
                 if ((type.Namespace == "Figures") && (type.GetInterface("IGUIIcon") != null))
@@ -87,7 +87,7 @@ namespace lab1_v2
             if (FiguresListBox.SelectedIndex > -1)
             {
                 Type type = FiguresListBox.SelectedItem as Type;
-                specifiedFigure = (Figure)Activator.CreateInstance(type); 
+                specifiedFigure = (Figure)Activator.CreateInstance(type);//(Figure)Activator.CreateInstance(type) Convert.ChangeType(Activator.CreateInstance(type), type.BaseType);
                 specifiedFigure.pointCount = 0;
             }
             else
