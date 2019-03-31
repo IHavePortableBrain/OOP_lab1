@@ -1,10 +1,10 @@
-﻿using lab1_v2.Figures;
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
+using Figures;
 
 // todo
 //ДЕСЕРИАЛИЗАЦИЯ НЕ УДАЛЯЕТ СЕРИЮ ИЗ ФАЙЛА!!!
@@ -39,6 +39,16 @@ namespace lab1_v2
         private enum State : int { draw, pending };
         private State state = State.pending;
 
+        private void Form_graphic_Load(object sender, EventArgs e)
+        {
+            PB.Height = 1200;//костыль показать;
+            PB.Width = 599;
+            bmp = new Bitmap(PB.Height, PB.Width);
+            graph = Graphics.FromImage(bmp);
+            pen = new Pen(Figure.DefaultPenColor, Figure.DefaultPenWidth);
+            FiguresListBox.SelectedIndex = 0;//initial figure pick
+        }
+
         public form_graphic()
         {
             InitializeComponent();
@@ -52,11 +62,21 @@ namespace lab1_v2
 
             foreach (Type type in asm.GetTypes())
             {
-                if ((type.Namespace == "lab1_v2.Figures") && (type.GetInterface("IGUIIcon") != null))
+                if (((type.Namespace == "lab1_v2.Figures") || (type.Namespace == "Figures")) && (type.GetInterface("IGUIIcon") != null))
                 {
                     FiguresListBox.Items.Add(type);
                 }
             }
+
+            asm = Assembly.LoadFrom("D:\\! 4 сем\\ООТПИСП\\лабы\\lab1\\lab1_v2\\Figures\\bin\\Debug\\Figures.dll");
+            foreach (Type type in asm.GetTypes())
+            {
+                if ((type.Namespace == "Figures") && (type.GetInterface("IGUIIcon") != null))
+                {
+                    FiguresListBox.Items.Add(type);
+                }
+            }
+
         }
 
         //get specified parametrs of pen and figure and assign them
@@ -67,7 +87,7 @@ namespace lab1_v2
             if (FiguresListBox.SelectedIndex > -1)
             {
                 Type type = FiguresListBox.SelectedItem as Type;
-                specifiedFigure = (Figure)Activator.CreateInstance(type);
+                specifiedFigure = (Figure)Activator.CreateInstance(type); 
                 specifiedFigure.pointCount = 0;
             }
             else
@@ -95,16 +115,6 @@ namespace lab1_v2
             undoFile.Flush();
         }
 
-        private void Form_graphic_Load(object sender, EventArgs e)
-        {
-            PB.Height = 1200;//костыль показать;
-            PB.Width = 599;
-            bmp = new Bitmap(PB.Height, PB.Width);
-            graph = Graphics.FromImage(bmp);
-            pen = new Pen(Figure.DefaultPenColor, Figure.DefaultPenWidth);
-            FiguresListBox.SelectedIndex = 0;//initial figure pick
-        }
-
         private void ClearPaintBoxCanvas()
         {
             PB.Image = null;
@@ -125,11 +135,6 @@ namespace lab1_v2
             redoFiguresCount = 0;
 
             ClearPaintBoxCanvas();
-        }
-
-        private void BtnClear_Click(object sender, EventArgs e)
-        {
-            ClearCanvasAndState();
         }
 
         private void DrawAndSerializeSpecifiedFigure()
@@ -283,13 +288,13 @@ namespace lab1_v2
         private void Form_graphic_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.ShiftKey)
-                specifiedFigure.DrawMode = DrawMode.none;
+                specifiedFigure.DrawMode = Figures.DrawMode.none;
         }
 
         private void Form_graphic_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.ShiftKey)
-                specifiedFigure.DrawMode = DrawMode.shift;
+                specifiedFigure.DrawMode = Figures.DrawMode.shift;
             else
             if (e.KeyCode == Keys.Q)
                 StopDrawing();
@@ -307,18 +312,6 @@ namespace lab1_v2
         {
             colorDialog.ShowDialog();
             pen.Color = colorDialog.Color;
-        }
-
-        private void NumericUpDown1_ValueChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                pen.Width = (float)numericUpDown1.Value;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
@@ -350,7 +343,24 @@ namespace lab1_v2
             }
         }
 
+        private void BtnClear_Click(object sender, EventArgs e)
+        {
+            ClearCanvasAndState();
+        }
+
         private void NumericUpDown1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            try
+            {
+                pen.Width = (float)numericUpDown1.Value;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void NumericUpDown1_ValueChanged(object sender, EventArgs e)
         {
             try
             {

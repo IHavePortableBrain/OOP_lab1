@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Figures">
+      <HintPath>..\Figures\bin\Debug\Figures.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,13 +51,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Figures\IGUIIcon.cs" />
-    <Compile Include="Figures\IMultipointFigure.cs" />
-    <Compile Include="Figures\MyEllipse.cs" />
-    <Compile Include="Figures\MyCurve.cs" />
-    <Compile Include="Figures\MyRectangle.cs" />
-    <Compile Include="Figures\MyLine.cs" />
-    <Compile Include="Figures\Figure.cs" />
     <Compile Include="GraphicRed.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -88,6 +84,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Lib\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
