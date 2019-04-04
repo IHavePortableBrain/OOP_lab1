@@ -28,7 +28,8 @@ namespace lab1_v2
         private Pen pen;
         private Figure specifiedFigure = null; //Figure dynamic
 
-        private const string LibPath = "..\\..\\Lib";
+        private const string LibPath = "..\\..\\Lib";  //"..\\..\\Lib"; "D:\\! 4 сем\\ООТПИСП\\лабы\\lab1\\lab1_v2\\lab1_v2\\Lib\\FiguresLib.dll"
+        private const string LibFiguresName = "FiguresLib";
         private const string UndoFileName = "undo.dat";
         private const string RedoFileName = "redo.dat";
         private FileStream undoFile = new FileStream(UndoFileName, FileMode.Create);
@@ -60,7 +61,8 @@ namespace lab1_v2
         //scan declared types and add to GUI those which can be drawed 
         private void LoadFigures()
         {
-            Assembly asm = Assembly.GetExecutingAssembly();
+            #region trash
+            //Assembly asm = Assembly.GetExecutingAssembly();
 
             //foreach (Type type in asm.GetTypes())
             //{
@@ -70,14 +72,16 @@ namespace lab1_v2
             //    }
             //}
 
-            foreach (string filePath in Directory.GetFiles(LibPath)) { 
-                asm = Assembly.LoadFrom(filePath); //"..\\..\\..\\Figures\\bin\\Debug\\FiguresLib.dll"
-                foreach (Type type in asm.GetTypes())
+            //foreach (string filePath in Directory.GetFiles(LibPath)) {
+            //asm = Assembly.LoadFrom(filePath); //"..\\..\\..\\Figures\\bin\\Debug\\FiguresLib.dll" 
+            //AssemblyName[] arn = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
+            #endregion
+            Assembly asm = Assembly.Load(LibFiguresName);   
+            foreach (Type type in asm.GetTypes())
+            {
+                if ((type.Namespace == "Figures") && (type.GetInterface("IGUIIcon") != null))
                 {
-                    if ((type.Namespace == "Figures") && (type.GetInterface("IGUIIcon") != null))
-                    {
-                        FiguresListBox.Items.Add(type);
-                    }
+                    FiguresListBox.Items.Add(type);
                 }
             }
 
