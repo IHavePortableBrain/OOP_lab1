@@ -2,12 +2,15 @@
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 using Figures;
 
 // todo
 //ДЕСЕРИАЛИЗАЦИЯ НЕ УДАЛЯЕТ СЕРИЮ ИЗ ФАЙЛА!!!
+//2 длл.Одна для Figure остальные, вторая для остальных . Обращение к MyCurve нельзя в основном проекте
+//forech po papke izvlech full path and load type
 //5. баг если не отжимать лкм в пределах пб?
 //9 redo и undo не меняет состояние панели выбранной фигуры
 //11. баг тянущаяся курва сменить фигуру
@@ -29,7 +32,7 @@ namespace lab1_v2
         private Figure specifiedFigure = null; //Figure dynamic
 
         private const string LibPath = "..\\..\\Lib";  //"..\\..\\Lib"; "D:\\! 4 сем\\ООТПИСП\\лабы\\lab1\\lab1_v2\\lab1_v2\\Lib\\FiguresLib.dll"
-        private const string LibFiguresName = "FiguresLib";
+        private const string LibFiguresName = "FiguresLib.dll";
         private const string UndoFileName = "undo.dat";
         private const string RedoFileName = "redo.dat";
         private FileStream undoFile = new FileStream(UndoFileName, FileMode.Create);
@@ -40,7 +43,7 @@ namespace lab1_v2
 
         private enum State : int { draw, pending };
         private State state = State.pending;
-
+        
         private void Form_graphic_Load(object sender, EventArgs e)
         {
             PB.Height = 1200;//костыль показать;
@@ -56,6 +59,17 @@ namespace lab1_v2
         {
             InitializeComponent();
             LoadFigures();
+
+        }
+
+        static byte[] LoadFile(string filename)
+        {
+            FileStream fs = new FileStream(filename, FileMode.Open);
+            byte[] buffer = new byte[(int)fs.Length];
+            fs.Read(buffer, 0, buffer.Length);
+            fs.Close();
+
+            return buffer;
         }
 
         //scan declared types and add to GUI those which can be drawed 
@@ -75,8 +89,17 @@ namespace lab1_v2
             //foreach (string filePath in Directory.GetFiles(LibPath)) {
             //asm = Assembly.LoadFrom(filePath); //"..\\..\\..\\Figures\\bin\\Debug\\FiguresLib.dll" 
             //AssemblyName[] arn = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
+
+            //Assembly asm = Assembly.LoadFile(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName); //  LibFiguresName,  @"D:\! 4 сем\ООТПИСП\лабы\lab1\lab1_v2\lab1_v2\Lib\FiguresLib.dll"
+            //Assembly asm = Assembly.LoadFrom(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName);
+            //AppDomain.CurrentDomain.DefineDynamicAssembly(asm.GetName(), System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
             #endregion
-            Assembly asm = Assembly.Load(LibFiguresName);   
+
+            byte[] rawAssembly = LoadFile(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName);
+            Assembly asm = AppDomain.CurrentDomain.Load(rawAssembly);
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
+
+
             foreach (Type type in asm.GetTypes())
             {
                 if ((type.Namespace == "Figures") && (type.GetInterface("IGUIIcon") != null))
@@ -85,6 +108,16 @@ namespace lab1_v2
                 }
             }
 
+        }
+
+        static Assembly AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            AppDomain domain = (AppDomain)sender;
+
+            byte[] rawAssembly = LoadFile(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName);
+            Assembly assembly = domain.Load(rawAssembly);
+
+            return assembly;
         }
 
         //get specified parametrs of pen and figure and assign them
@@ -223,6 +256,7 @@ namespace lab1_v2
 
         private void DrawUndoCountFigures()
         {
+            
             for (int i = 0; i < undoFiguresCount; i++)//print undoFiguresCount - 1 serialized figures loop
             {
                 specifiedFigure = (Figure)formatter.Deserialize(undoFile);
@@ -338,16 +372,27 @@ namespace lab1_v2
 
         private void BtnLoad_Click(object sender, EventArgs e)
         {
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            try
             {
-                string openUndoFiguresFile = openFileDialog.FileName;
-                FileStream copyUndoFiguresStream = new FileStream(openUndoFiguresFile, FileMode.Open);
-                copyUndoFiguresStream.Seek(0L, SeekOrigin.Begin);
-                ClearCanvasAndState();
-                copyUndoFiguresStream.CopyTo(undoFile);
-                openUndoFiguresFile = null;
-                copyUndoFiguresStream.Dispose();
-                DrawAllUndoFiguresAndRefreshCount();
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string openUndoFiguresFile = openFileDialog.FileName;
+                    FileStream copyUndoFiguresStream = new FileStream(openUndoFiguresFile, FileMode.Open);
+                    copyUndoFiguresStream.Seek(0L, SeekOrigin.Begin);
+                    ClearCanvasAndState();
+                    copyUndoFiguresStream.CopyTo(undoFile);
+                    openUndoFiguresFile = null;
+                    copyUndoFiguresStream.Dispose();
+                    DrawAllUndoFiguresAndRefreshCount();
+                }
+            }
+            catch(System.Runtime.Serialization.SerializationException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(String.Format("Invalid serialization file {0}", openFileDialog.FileName));
             }
         }
 
