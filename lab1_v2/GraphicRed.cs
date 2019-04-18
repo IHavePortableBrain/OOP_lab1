@@ -2,10 +2,14 @@
 using System.Drawing;
 using System.IO;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 using Figures;
+
+using System.Threading.Tasks;
+using System.Net;
+using System.Net.Sockets;
+using NetLib;
 
 // todo
 //ДЕСЕРИАЛИЗАЦИЯ НЕ УДАЛЯЕТ СЕРИЮ ИЗ ФАЙЛА!!!
@@ -35,20 +39,25 @@ namespace lab1_v2
         private const string LibFiguresName = "FiguresLib.dll";
         private const string UndoFileName = "undo.dat";
         private const string RedoFileName = "redo.dat";
-        private FileStream undoFile = new FileStream(UndoFileName, FileMode.Create);
-        private FileStream redoFile = new FileStream(RedoFileName, FileMode.Create);
+        private const string ReceivedFileName = "received.dat";
+        
         private BinaryFormatter formatter = new BinaryFormatter();
         private UInt32 undoFiguresCount = 0;
         private UInt32 redoFiguresCount = 0;
+
+        private const int BUFSIZ = 1024 * 1024;
+
+        Socket clientSocket;
+        IPEndPoint serverIpEndPoint;
 
         private enum State : int { draw, pending };
         private State state = State.pending;
         
         private void Form_graphic_Load(object sender, EventArgs e)
         {
-            PB.Height = 1200;//костыль показать;
-            PB.Width = 599;
-            bmp = new Bitmap(PB.Height, PB.Width);
+            new FileStream(UndoFileName, FileMode.Create).Dispose(); //Clear file
+            new FileStream(RedoFileName, FileMode.Create).Dispose();
+            bmp = new Bitmap(PB.Width, PB.Height);
             graph = Graphics.FromImage(bmp);
             pen = new Pen(Figure.DefaultPenColor, Figure.DefaultPenWidth);
             if (FiguresListBox.Items.Count > 0)
@@ -124,7 +133,7 @@ namespace lab1_v2
         private void GetFigureAndPen()
         {
             pen.Color = colorDialog.Color;
-            pen.Width = (float)numericUpDown1.Value;
+            pen.Width = (float)numericPenWidth.Value;
             if (FiguresListBox.SelectedIndex > -1)
             {
                 Type type = FiguresListBox.SelectedItem as Type;
@@ -148,12 +157,15 @@ namespace lab1_v2
             specifiedFigure.Draw(graph, pen);
             PB.Image = bmp;
         }
-
+        
         private void SerializeSpecifiedFigure()
         {
+            FileStream undoFile = new FileStream(UndoFileName, FileMode.OpenOrCreate);
+            undoFile.Seek(0L, SeekOrigin.End);
             formatter.Serialize(undoFile, specifiedFigure);
             undoFiguresCount++;
             undoFile.Flush();
+            undoFile.Dispose();
         }
 
         private void ClearPaintBoxCanvas()
@@ -168,10 +180,12 @@ namespace lab1_v2
             state = State.pending;
             specifiedFigure.pointCount = 0;
 
-            undoFile.Dispose();
-            redoFile.Dispose();
-            undoFile = new FileStream(UndoFileName, FileMode.Create);
-            redoFile = new FileStream(RedoFileName, FileMode.Create);
+            //undoFile.Dispose();
+            //redoFile.Dispose();
+            //undoFile = new FileStream(UndoFileName, FileMode.Create);
+            //redoFile = new FileStream(RedoFileName, FileMode.Create);
+            new FileStream(UndoFileName, FileMode.Create).Dispose();
+            new FileStream(RedoFileName, FileMode.Create).Dispose();
             undoFiguresCount = 0;
             redoFiguresCount = 0;
 
@@ -241,25 +255,24 @@ namespace lab1_v2
             }
         }
 
-        private void DrawAllUndoFiguresAndRefreshCount()
+        private void DrawAllFileFiguresAndRefreshCount(FileStream figureFile, out uint figureCount)
         {
-            undoFiguresCount = 0;
-            undoFile.Seek(0L, SeekOrigin.Begin);
-            while (undoFile.Position < undoFile.Length)
+            figureCount = 0;
+            figureFile.Seek(0L, SeekOrigin.Begin);
+            while (figureFile.Position < figureFile.Length)
             {
-                specifiedFigure = (Figure)formatter.Deserialize(undoFile);
-                undoFiguresCount++;
+                specifiedFigure = (Figure)formatter.Deserialize(figureFile);
+                figureCount++;
                 pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
                 DrawSpecifiedFigure();
             }
         }
 
-        private void DrawUndoCountFigures()
+        private void DrawCountFigures(FileStream file,uint count)
         {
-            
-            for (int i = 0; i < undoFiguresCount; i++)//print undoFiguresCount - 1 serialized figures loop
+            for (int i = 0; i < count; i++)//print undoFiguresCount - 1 serialized figures loop
             {
-                specifiedFigure = (Figure)formatter.Deserialize(undoFile);
+                specifiedFigure = (Figure)formatter.Deserialize(file);
                 pen = new Pen(specifiedFigure.PenColor, specifiedFigure.PenWidth);
                 DrawSpecifiedFigure();
             }
@@ -269,22 +282,28 @@ namespace lab1_v2
         {
             state = State.pending;
             ClearPaintBoxCanvas();
-            undoFile.Position = 0;
+            FileStream undoFile = new FileStream(UndoFileName, FileMode.OpenOrCreate);
+            FileStream redoFile = new FileStream(RedoFileName, FileMode.OpenOrCreate);
+            redoFile.Seek(0, SeekOrigin.End);
             undoFiguresCount--;
-            DrawUndoCountFigures();
+            DrawCountFigures(undoFile, undoFiguresCount);
             long newLength = undoFile.Position;//move last serialized figure from undo to redo file
             formatter.Serialize(redoFile, formatter.Deserialize(undoFile));
             undoFile.SetLength(newLength);
             redoFiguresCount++;
             redoFile.Flush();
             undoFile.Flush();
+            undoFile.Dispose();
+            redoFile.Dispose();
         }
 
         private void Redo()
         {
             state = State.pending;
             ClearPaintBoxCanvas();
-            redoFile.Position = 0;
+            FileStream undoFile = new FileStream(UndoFileName, FileMode.OpenOrCreate);
+            FileStream redoFile = new FileStream(RedoFileName, FileMode.OpenOrCreate);
+            undoFile.Seek(0, SeekOrigin.End);
             for (int i = 0; i < redoFiguresCount - 1; i++) //skipping n - 1 redo figures loop
             {
                 specifiedFigure = (Figure)formatter.Deserialize(redoFile);
@@ -296,9 +315,11 @@ namespace lab1_v2
             redoFiguresCount--;
             undoFiguresCount++;
             undoFile.Position = 0;
-            DrawUndoCountFigures();
+            DrawCountFigures(undoFile, undoFiguresCount);
             redoFile.Flush();
             undoFile.Flush();
+            undoFile.Dispose();
+            redoFile.Dispose();
         }
 
         private void Form_graphic_KeyPress(object sender, KeyPressEventArgs e)
@@ -350,6 +371,30 @@ namespace lab1_v2
             graph = Graphics.FromImage(bmp);
         }
 
+        private void NumericPenWidth_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            try
+            {
+                pen.Width = (float)numericPenWidth.Value;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void NumericPenWidth_ValueChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                pen.Width = (float)numericPenWidth.Value;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         private void BtnColor_Click(object sender, EventArgs e)
         {
             colorDialog.ShowDialog();
@@ -362,28 +407,32 @@ namespace lab1_v2
             {
                 string saveUndoFiguresFile = saveFileDialog.FileName;
                 FileStream saveUndoFiguresStream = new FileStream(saveUndoFiguresFile, FileMode.Create);
-                undoFile.Seek(0L, SeekOrigin.Begin);
+                //undoFile.Seek(0L, SeekOrigin.Begin);
+                FileStream undoFile = new FileStream(UndoFileName, FileMode.OpenOrCreate);
                 undoFile.CopyTo(saveUndoFiguresStream);
                 saveUndoFiguresFile = null;
                 saveUndoFiguresStream.Dispose();
+                undoFile.Dispose();
                 MessageBox.Show(String.Format("Saved to {0}", saveFileDialog.FileName));
             }
         }
 
         private void BtnLoad_Click(object sender, EventArgs e)
         {
+            FileStream copyUndoFiguresStream = null;
+            FileStream undoFile = null;
+            string openUndoFiguresFile;
             try
             {
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    string openUndoFiguresFile = openFileDialog.FileName;
-                    FileStream copyUndoFiguresStream = new FileStream(openUndoFiguresFile, FileMode.Open);
+                    openUndoFiguresFile = openFileDialog.FileName;
+                    copyUndoFiguresStream = new FileStream(openUndoFiguresFile, FileMode.Open);
                     copyUndoFiguresStream.Seek(0L, SeekOrigin.Begin);
                     ClearCanvasAndState();
+                    undoFile = new FileStream(UndoFileName, FileMode.OpenOrCreate);
                     copyUndoFiguresStream.CopyTo(undoFile);
-                    openUndoFiguresFile = null;
-                    copyUndoFiguresStream.Dispose();
-                    DrawAllUndoFiguresAndRefreshCount();
+                    DrawAllFileFiguresAndRefreshCount(undoFile,out undoFiguresCount);
                 }
             }
             catch(System.Runtime.Serialization.SerializationException ex)
@@ -394,6 +443,14 @@ namespace lab1_v2
             {
                 MessageBox.Show(String.Format("Invalid serialization file {0}", openFileDialog.FileName));
             }
+            finally
+            {
+                openUndoFiguresFile = null;
+                if (copyUndoFiguresStream != null)
+                    copyUndoFiguresStream.Dispose();
+                if (undoFile != null)
+                    undoFile.Dispose();
+            }
         }
 
         private void BtnClear_Click(object sender, EventArgs e)
@@ -401,28 +458,201 @@ namespace lab1_v2
             ClearCanvasAndState();
         }
 
-        private void NumericUpDown1_KeyPress(object sender, KeyPressEventArgs e)
+
+
+        private void BtnStartHosting_Click(object sender, EventArgs e)
         {
             try
             {
-                pen.Width = (float)numericUpDown1.Value;
+                if (numericPort.Validate())
+                {
+                    Task.Run(() => ServerRoutine(Convert.ToInt16(numericPort.Value)));
+                }
+                else
+                    throw new Exception();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+
+            }
+
+        }
+
+        private void BtnPull_Click(object sender, EventArgs e)
+        {
+            FileStream receivedFileStream = null;
+            FileStream undoFile = null;
+            try
+            {
+                NetOps.SendAcknowledgement(NetOps.SignalPull, clientSocket);
+                string receivedFileName = ReceivedFileName;
+                NetOps.ReceiveFile(clientSocket, ref receivedFileName);
+                receivedFileStream = new FileStream(receivedFileName, FileMode.Open);
+                undoFile = new FileStream(UndoFileName, FileMode.Create); //OpenOrCreate if pull dont delete client work
+                CopyStream(undoFile, receivedFileStream);
+                ClearPaintBoxCanvas();
+                DrawAllFileFiguresAndRefreshCount(receivedFileStream, out undoFiguresCount);//может лучше рисовать все фигуры принитого файла и сериализовать их а не аппендить файл и рисовать полученнный?
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (receivedFileStream != null)
+                    receivedFileStream.Dispose();
+                if (undoFile != null)
+                    undoFile.Dispose();
             }
         }
 
-        private void NumericUpDown1_ValueChanged(object sender, EventArgs e)
+        private void BtnCommit_Click(object sender, EventArgs e)
         {
             try
             {
-                pen.Width = (float)numericUpDown1.Value;
+                NetOps.SendAcknowledgement(NetOps.SignalCommit, clientSocket);
+                NetOps.SendFile(UndoFileName, clientSocket);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                MessageBox.Show(ex.Message);
             }
         }
+
+        private void BtnConnect_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ClientStart(IPAddress.Parse(maskedTextBox.Text), Convert.ToInt16(numericPort.Value));
+            }
+            catch  (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void BtnDisconnect_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                NetOps.SendAcknowledgement(NetOps.SignalDisconnect, clientSocket);
+                clientSocket.Disconnect(true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void ClientStart(IPAddress serverIP,int ListenPort)
+        {
+            //todo if validate numeric and mask
+            serverIpEndPoint = new IPEndPoint(serverIP, ListenPort);
+            clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            clientSocket.Connect(serverIpEndPoint);
+        }
+
+        private void ServerRoutine(int ListenPort)
+        {
+            try
+            {
+                IPEndPoint listenIPEndPoint = new IPEndPoint(IPAddress.Any, ListenPort);
+                Socket listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+                listenSocket.Bind(listenIPEndPoint);
+                listenSocket.Listen(10);
+                MessageBox.Show(String.Format("Start hosting accepting {0} IP,{1} port", listenIPEndPoint.Address, listenIPEndPoint.Port));
+                while (true)
+                {
+                    Socket clientSocket = listenSocket.Accept();
+                    try
+                    {
+                        Task.Run(() => ServeOneClient(clientSocket));
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        NetOps.SendReply(ex.Message, clientSocket);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void ServeOneClient(Socket clientServeSocket)
+        {
+            bool isServeEnd = false;
+            int clientSignal = NetOps.SignalDisconnect;
+            byte[] buf = new byte[1024];
+
+            IPEndPoint clientEP = (IPEndPoint)clientServeSocket.RemoteEndPoint;
+            MessageBox.Show(String.Format("Connected with {0} at port {1}", clientEP.Address, clientEP.Port));
+            while (!isServeEnd)
+            {
+                try
+                {
+                    clientSignal = NetOps.GetAcknowlegment(clientServeSocket);
+
+                    switch (clientSignal)
+                    {
+                        case NetOps.SignalDisconnect:
+                            isServeEnd = true;
+                            MessageBox.Show(String.Format("Client ip {0} at port {1} disconnect", clientEP.Address, clientEP.Port));
+                            clientServeSocket.Disconnect(false);
+                            clientServeSocket.Dispose();
+                            break;
+
+                        case NetOps.SignalPull:
+                            NetOps.SendFile(UndoFileName, clientServeSocket);
+                            break;
+                            
+                        case NetOps.SignalCommit:
+                            string receivedFileName = ReceivedFileName;
+                            NetOps.ReceiveFile(clientServeSocket, ref receivedFileName);
+                            CommitFile(receivedFileName);
+                            FileStream undoFile = new FileStream(UndoFileName, FileMode.OpenOrCreate);
+                            DrawAllFileFiguresAndRefreshCount(undoFile,out undoFiguresCount);
+                            undoFile.Dispose();
+                            break;
+
+                        default:
+                            NetOps.SendAcknowledgement(NetOps.SignalError, clientServeSocket);
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    NetOps.SendAcknowledgement(NetOps.SignalError, clientServeSocket);
+                    NetOps.SendReply(ex.Message, clientServeSocket);
+                }
+            }
+        }
+
+        private void CommitFile(string receivedFileName)
+        {
+            FileStream undoFile = new FileStream(UndoFileName, FileMode.OpenOrCreate);
+            FileStream receivedFileStream = new FileStream(receivedFileName, FileMode.Open);
+            CopyStream(undoFile, receivedFileStream);
+            receivedFileStream.Dispose();
+            undoFile.Dispose();
+        }
+
+        private void CopyStream(Stream destination, Stream source)
+        {
+            int count;
+            byte[] buffer = new byte[BUFSIZ];
+            while ((count = source.Read(buffer, 0, buffer.Length)) > 0)
+                destination.Write(buffer, 0, count);
+        }
+
+        
     }
 }

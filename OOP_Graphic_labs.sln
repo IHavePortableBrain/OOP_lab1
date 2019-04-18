@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiguresLib", "Figures\Figur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaseFigureLib", "BaseFigure\BaseFigureLib.csproj", "{856442AD-1744-4CA8-896D-80CCB7E712F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetOps", "NetOps\NetOps.csproj", "{13A8E32F-C301-48AC-A44B-30530AAEAE83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{856442AD-1744-4CA8-896D-80CCB7E712F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{856442AD-1744-4CA8-896D-80CCB7E712F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{856442AD-1744-4CA8-896D-80CCB7E712F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13A8E32F-C301-48AC-A44B-30530AAEAE83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13A8E32F-C301-48AC-A44B-30530AAEAE83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13A8E32F-C301-48AC-A44B-30530AAEAE83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13A8E32F-C301-48AC-A44B-30530AAEAE83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
