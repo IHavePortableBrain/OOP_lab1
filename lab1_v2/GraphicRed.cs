@@ -40,7 +40,8 @@ namespace lab1_v2
         private const string UndoFileName = "undo.dat";
         private const string RedoFileName = "redo.dat";
         private const string ReceivedFileName = "received.dat";
-        
+        private const string PulledFileName = "pulled.dat";
+
         private BinaryFormatter formatter = new BinaryFormatter();
         private UInt32 undoFiguresCount = 0;
         private UInt32 redoFiguresCount = 0;
@@ -168,14 +169,19 @@ namespace lab1_v2
             undoFile.Dispose();
         }
 
-        private void ClearPaintBoxCanvas()
+        private void ClearPaintBoxCanvas(string initPictureFile = null)
         {
             PB.Image = null;
             //if (graph != null)
                 graph.Clear(Color.White);
+            if (initPictureFile != null && File.Exists(initPictureFile))
+            {
+                using (FileStream initPictureFileStream = new FileStream(initPictureFile, FileMode.Open))
+                    DrawAllFileFiguresAndRefreshCount(initPictureFileStream, out uint dummy);
+            }
         }
 
-        private void ClearCanvasAndState()
+        private void ClearCanvasAndState(string initPictureFile = null)
         {
             state = State.pending;
             specifiedFigure.pointCount = 0;
@@ -186,10 +192,14 @@ namespace lab1_v2
             //redoFile = new FileStream(RedoFileName, FileMode.Create);
             new FileStream(UndoFileName, FileMode.Create).Dispose();
             new FileStream(RedoFileName, FileMode.Create).Dispose();
+            if (initPictureFile != PulledFileName)
+                new FileStream(PulledFileName, FileMode.Create).Dispose();
+
             undoFiguresCount = 0;
             redoFiguresCount = 0;
 
-            ClearPaintBoxCanvas();
+            ClearPaintBoxCanvas(initPictureFile);
+            //new FileStream(PulledFileName, FileMode.Create).Dispose();
         }
 
         private void DrawAndSerializeSpecifiedFigure()
@@ -281,7 +291,7 @@ namespace lab1_v2
         private void Undo()
         {
             state = State.pending;
-            ClearPaintBoxCanvas();
+            ClearPaintBoxCanvas(PulledFileName);
             FileStream undoFile = new FileStream(UndoFileName, FileMode.OpenOrCreate);
             FileStream redoFile = new FileStream(RedoFileName, FileMode.OpenOrCreate);
             redoFile.Seek(0, SeekOrigin.End);
@@ -300,7 +310,7 @@ namespace lab1_v2
         private void Redo()
         {
             state = State.pending;
-            ClearPaintBoxCanvas();
+            ClearPaintBoxCanvas(PulledFileName);
             FileStream undoFile = new FileStream(UndoFileName, FileMode.OpenOrCreate);
             FileStream redoFile = new FileStream(RedoFileName, FileMode.OpenOrCreate);
             undoFile.Seek(0, SeekOrigin.End);
@@ -489,13 +499,13 @@ namespace lab1_v2
             try
             {
                 NetOps.SendAcknowledgement(NetOps.SignalPull, clientSocket);
-                string receivedFileName = ReceivedFileName;
-                NetOps.ReceiveFile(clientSocket, ref receivedFileName);
-                receivedFileStream = new FileStream(receivedFileName, FileMode.Open);
-                undoFile = new FileStream(UndoFileName, FileMode.Create); //OpenOrCreate if pull dont delete client work
-                CopyStream(undoFile, receivedFileStream);
-                ClearPaintBoxCanvas();
-                DrawAllFileFiguresAndRefreshCount(receivedFileStream, out undoFiguresCount);//может лучше рисовать все фигуры принитого файла и сериализовать их а не аппендить файл и рисовать полученнный?
+                string pulledFileName = PulledFileName;
+                NetOps.ReceiveFile(clientSocket, ref pulledFileName);
+                //pulledFileName = new FileStream(pulledFileName, FileMode.Open);
+                //undoFile = new FileStream(UndoFileName, FileMode.Create); //OpenOrCreate if pull dont delete client work
+                //CopyStream(undoFile, receivedFileStream);
+                ClearCanvasAndState(pulledFileName);
+                //DrawAllFileFiguresAndRefreshCount(receivedFileStream, out undoFiguresCount);//может лучше рисовать все фигуры принитого файла и сериализовать их а не аппендить файл и рисовать полученнный?
             }
             catch (Exception ex)
             {
@@ -649,6 +659,7 @@ namespace lab1_v2
         {
             int count;
             byte[] buffer = new byte[BUFSIZ];
+            destination.Seek(0L, SeekOrigin.End);
             while ((count = source.Read(buffer, 0, buffer.Length)) > 0)
                 destination.Write(buffer, 0, count);
         }
