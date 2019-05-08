@@ -10,7 +10,7 @@ namespace Figures
     public enum DrawMode : int { none, shift, ctrl };
 
     [Serializable]
-    public class Figure
+    public class Figure:ICloneable
     {
         //[NonSerialized]
         readonly public static uint MaxPointCount = 20;
@@ -22,16 +22,24 @@ namespace Figures
         public DrawMode DrawMode;
         public PointF[] pointFs = new PointF[MaxPointCount];
         
-        public Color PenColor { get; protected set; }
-        public float PenWidth { get; protected set; }
-        
+        public Color PenColor { get; set; }//protected set
+        public float PenWidth { get; set; }//protected set
 
-        protected  internal Figure()
+
+        public Figure()//protected
         {
             PenColor = DefaultPenColor;
             PenWidth = DefaultPenWidth;
             DrawMode = DrawMode.none;
             pointCount = 0;
+        }
+
+        public object Clone()
+        {
+            Figure copy = (Figure)this.MemberwiseClone();
+            copy.pointFs = new PointF[MaxPointCount];
+            Array.Copy(this.pointFs, copy.pointFs, MaxPointCount);
+            return copy;
         }
 
         public virtual void Normalize()

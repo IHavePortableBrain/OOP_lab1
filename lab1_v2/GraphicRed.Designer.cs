@@ -45,6 +45,10 @@
             this.btnCommit = new System.Windows.Forms.Button();
             this.btnPull = new System.Windows.Forms.Button();
             this.btnDisconnect = new System.Windows.Forms.Button();
+            this.btnAddUserFigure = new System.Windows.Forms.Button();
+            this.btnRefreshUserList = new System.Windows.Forms.Button();
+            this.UserFigureNameTextBox = new System.Windows.Forms.TextBox();
+            this.UserFiguresListBox = new System.Windows.Forms.ListBox();
             ((System.ComponentModel.ISupportInitialize)(this.PB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPenWidth)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPort)).BeginInit();
@@ -66,7 +70,7 @@
             // 
             // btnClear
             // 
-            this.btnClear.Location = new System.Drawing.Point(476, 70);
+            this.btnClear.Location = new System.Drawing.Point(476, 73);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(120, 47);
             this.btnClear.TabIndex = 6;
@@ -76,9 +80,9 @@
             // 
             // btnColor
             // 
-            this.btnColor.Location = new System.Drawing.Point(191, 70);
+            this.btnColor.Location = new System.Drawing.Point(332, 73);
             this.btnColor.Name = "btnColor";
-            this.btnColor.Size = new System.Drawing.Size(113, 47);
+            this.btnColor.Size = new System.Drawing.Size(120, 47);
             this.btnColor.TabIndex = 7;
             this.btnColor.Text = "color";
             this.btnColor.UseVisualStyleBackColor = true;
@@ -86,7 +90,7 @@
             // 
             // numericPenWidth
             // 
-            this.numericPenWidth.Location = new System.Drawing.Point(22, 70);
+            this.numericPenWidth.Location = new System.Drawing.Point(332, 124);
             this.numericPenWidth.Maximum = new decimal(new int[] {
             30,
             0,
@@ -114,7 +118,7 @@
             this.FiguresListBox.ItemHeight = 16;
             this.FiguresListBox.Location = new System.Drawing.Point(22, 14);
             this.FiguresListBox.Name = "FiguresListBox";
-            this.FiguresListBox.Size = new System.Drawing.Size(282, 36);
+            this.FiguresListBox.Size = new System.Drawing.Size(282, 100);
             this.FiguresListBox.TabIndex = 9;
             this.FiguresListBox.SelectedIndexChanged += new System.EventHandler(this.FiguresListBox_SelectedIndexChanged);
             // 
@@ -149,7 +153,7 @@
             // 
             // btnStartHosting
             // 
-            this.btnStartHosting.Location = new System.Drawing.Point(730, 14);
+            this.btnStartHosting.Location = new System.Drawing.Point(984, 17);
             this.btnStartHosting.Name = "btnStartHosting";
             this.btnStartHosting.Size = new System.Drawing.Size(105, 47);
             this.btnStartHosting.TabIndex = 12;
@@ -159,7 +163,7 @@
             // 
             // btnConnect
             // 
-            this.btnConnect.Location = new System.Drawing.Point(924, 12);
+            this.btnConnect.Location = new System.Drawing.Point(1110, 17);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(105, 47);
             this.btnConnect.TabIndex = 13;
@@ -170,7 +174,7 @@
             // maskedTextBox
             // 
             this.maskedTextBox.AsciiOnly = true;
-            this.maskedTextBox.Location = new System.Drawing.Point(924, 118);
+            this.maskedTextBox.Location = new System.Drawing.Point(1110, 123);
             this.maskedTextBox.Name = "maskedTextBox";
             this.maskedTextBox.Size = new System.Drawing.Size(100, 22);
             this.maskedTextBox.TabIndex = 14;
@@ -179,7 +183,7 @@
             // 
             // numericPort
             // 
-            this.numericPort.Location = new System.Drawing.Point(730, 82);
+            this.numericPort.Location = new System.Drawing.Point(984, 85);
             this.numericPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -196,7 +200,7 @@
             // 
             // btnCommit
             // 
-            this.btnCommit.Location = new System.Drawing.Point(1122, 14);
+            this.btnCommit.Location = new System.Drawing.Point(1236, 17);
             this.btnCommit.Name = "btnCommit";
             this.btnCommit.Size = new System.Drawing.Size(121, 47);
             this.btnCommit.TabIndex = 16;
@@ -206,7 +210,7 @@
             // 
             // btnPull
             // 
-            this.btnPull.Location = new System.Drawing.Point(1122, 95);
+            this.btnPull.Location = new System.Drawing.Point(1236, 73);
             this.btnPull.Name = "btnPull";
             this.btnPull.Size = new System.Drawing.Size(121, 40);
             this.btnPull.TabIndex = 17;
@@ -216,7 +220,7 @@
             // 
             // btnDisconnect
             // 
-            this.btnDisconnect.Location = new System.Drawing.Point(924, 65);
+            this.btnDisconnect.Location = new System.Drawing.Point(1110, 70);
             this.btnDisconnect.Name = "btnDisconnect";
             this.btnDisconnect.Size = new System.Drawing.Size(105, 47);
             this.btnDisconnect.TabIndex = 18;
@@ -224,11 +228,52 @@
             this.btnDisconnect.UseVisualStyleBackColor = true;
             this.btnDisconnect.Click += new System.EventHandler(this.BtnDisconnect_Click);
             // 
+            // btnAddUserFigure
+            // 
+            this.btnAddUserFigure.Location = new System.Drawing.Point(841, 70);
+            this.btnAddUserFigure.Name = "btnAddUserFigure";
+            this.btnAddUserFigure.Size = new System.Drawing.Size(98, 47);
+            this.btnAddUserFigure.TabIndex = 19;
+            this.btnAddUserFigure.Text = "Add figure";
+            this.btnAddUserFigure.UseVisualStyleBackColor = true;
+            this.btnAddUserFigure.Click += new System.EventHandler(this.BtnAddUserFigure_Click);
+            // 
+            // btnRefreshUserList
+            // 
+            this.btnRefreshUserList.Location = new System.Drawing.Point(841, 17);
+            this.btnRefreshUserList.Name = "btnRefreshUserList";
+            this.btnRefreshUserList.Size = new System.Drawing.Size(98, 47);
+            this.btnRefreshUserList.TabIndex = 20;
+            this.btnRefreshUserList.Text = "Refresh";
+            this.btnRefreshUserList.UseVisualStyleBackColor = true;
+            this.btnRefreshUserList.Click += new System.EventHandler(this.BtnRefreshUserList_Click);
+            // 
+            // UserFigureNameTextBox
+            // 
+            this.UserFigureNameTextBox.Location = new System.Drawing.Point(625, 82);
+            this.UserFigureNameTextBox.Name = "UserFigureNameTextBox";
+            this.UserFigureNameTextBox.Size = new System.Drawing.Size(191, 22);
+            this.UserFigureNameTextBox.TabIndex = 21;
+            // 
+            // UserFiguresListBox
+            // 
+            this.UserFiguresListBox.FormattingEnabled = true;
+            this.UserFiguresListBox.ItemHeight = 16;
+            this.UserFiguresListBox.Location = new System.Drawing.Point(625, 17);
+            this.UserFiguresListBox.Name = "UserFiguresListBox";
+            this.UserFiguresListBox.Size = new System.Drawing.Size(191, 52);
+            this.UserFiguresListBox.TabIndex = 22;
+            this.UserFiguresListBox.SelectedIndexChanged += new System.EventHandler(this.UserFiguresListBox_SelectedIndexChanged);
+            // 
             // form_graphic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1396, 953);
+            this.Controls.Add(this.UserFiguresListBox);
+            this.Controls.Add(this.UserFigureNameTextBox);
+            this.Controls.Add(this.btnRefreshUserList);
+            this.Controls.Add(this.btnAddUserFigure);
             this.Controls.Add(this.btnDisconnect);
             this.Controls.Add(this.btnPull);
             this.Controls.Add(this.btnCommit);
@@ -277,6 +322,10 @@
         private System.Windows.Forms.Button btnCommit;
         private System.Windows.Forms.Button btnPull;
         private System.Windows.Forms.Button btnDisconnect;
+        private System.Windows.Forms.Button btnAddUserFigure;
+        private System.Windows.Forms.Button btnRefreshUserList;
+        private System.Windows.Forms.TextBox UserFigureNameTextBox;
+        private System.Windows.Forms.ListBox UserFiguresListBox;
     }
 }
 

@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Figure.cs" />
     <Compile Include="IGUIIcon.cs" />
+    <Compile Include="IFetchDependent.cs" />
     <Compile Include="IMultipointFigure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

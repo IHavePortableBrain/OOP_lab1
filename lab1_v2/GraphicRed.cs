@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using Figures;
 
 using System.Threading.Tasks;
@@ -19,12 +20,12 @@ using NetLib;
 //9 redo и undo не меняет состояние панели выбранной фигуры
 //11. баг тянущаяся курва сменить фигуру
 //12.mouse leave event + ctrl z
-//!!!!13. нормальное сохранение.
 //4 лаба длл фигуры подгрузка.
 // ask
 //1. как свапать переменные закрываемые свойствами?(передать как ref)
 //4.лайфхаки отладчика?
 //5.отличие виртуального переопределения от простого перекрытия имени метода
+//6 pt=rotected хреново работает PenColor set чекай и конструктор Figure
 
 namespace lab1_v2
 {
@@ -37,16 +38,22 @@ namespace lab1_v2
 
         private const string LibPath = "..\\..\\Lib";  //"..\\..\\Lib"; "D:\\! 4 сем\\ООТПИСП\\лабы\\lab1\\lab1_v2\\lab1_v2\\Lib\\FiguresLib.dll"
         private const string LibFiguresName = "FiguresLib.dll";
+        private const string LibUserFiguresName = "UserFigureLib.dll";
         private const string UndoFileName = "undo.dat";
         private const string RedoFileName = "redo.dat";
         private const string ReceivedFileName = "received.dat";
         private const string PulledFileName = "pulled.dat";
+        private const string UserFiguresDirectory = "user figures";
+        private const string UserFigureFileBaseName = "userFigure";
+        private const string SerializationExtension = ".dat";
+
+        private static Assembly figuresAsm;
 
         private BinaryFormatter formatter = new BinaryFormatter();
         private UInt32 undoFiguresCount = 0;
         private UInt32 redoFiguresCount = 0;
 
-        private const int BUFSIZ = 1024 * 1024;
+        
 
         Socket clientSocket;
         IPEndPoint serverIpEndPoint;
@@ -63,6 +70,8 @@ namespace lab1_v2
             pen = new Pen(Figure.DefaultPenColor, Figure.DefaultPenWidth);
             if (FiguresListBox.Items.Count > 0)
                 FiguresListBox.SelectedIndex = 0;//initial figure pick
+            if (UserFiguresListBox.Items.Count > 0)
+                UserFiguresListBox.SelectedIndex = 0;//initial figure pick
         }
 
         public form_graphic()
@@ -72,15 +81,7 @@ namespace lab1_v2
 
         }
 
-        static byte[] LoadFile(string filename)
-        {
-            FileStream fs = new FileStream(filename, FileMode.Open);
-            byte[] buffer = new byte[(int)fs.Length];
-            fs.Read(buffer, 0, buffer.Length);
-            fs.Close();
-
-            return buffer;
-        }
+       
 
         //scan declared types and add to GUI those which can be drawed 
         private void LoadFigures()
@@ -105,12 +106,15 @@ namespace lab1_v2
             //AppDomain.CurrentDomain.DefineDynamicAssembly(asm.GetName(), System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
             #endregion
 
-            byte[] rawAssembly = LoadFile(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName);
-            Assembly asm = AppDomain.CurrentDomain.Load(rawAssembly);
+            byte[] rawAssembly = StdOps.LoadFile(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName);
+            figuresAsm = AppDomain.CurrentDomain.Load(rawAssembly);
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
 
+            //figuresAsm = Assembly.LoadFrom(Path.GetFullPath(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName));
+            //AppDomain.CurrentDomain.Load(figuresAsm.GetName());//figuresAsm.FullName
 
-            foreach (Type type in asm.GetTypes())
+
+            foreach (Type type in figuresAsm.GetTypes())
             {
                 if ((type.Namespace == "Figures") && (type.GetInterface("IGUIIcon") != null))
                 {
@@ -118,16 +122,17 @@ namespace lab1_v2
                 }
             }
 
+            RefreshUserList();
         }
 
-        static Assembly AssemblyResolve(object sender, ResolveEventArgs args)
+        public static Assembly AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            AppDomain domain = (AppDomain)sender;
+            //AppDomain domain = (AppDomain)sender;
 
-            byte[] rawAssembly = LoadFile(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName);
-            Assembly assembly = domain.Load(rawAssembly);
-
-            return assembly;
+            //byte[] rawAssembly = StdOps.LoadFile(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName);
+            //Assembly assembly = domain.Load(rawAssembly);
+ 
+            return figuresAsm;//assembly figuresAsm
         }
 
         //get specified parametrs of pen and figure and assign them
@@ -139,6 +144,8 @@ namespace lab1_v2
             {
                 Type type = FiguresListBox.SelectedItem as Type;
                 specifiedFigure = (Figure)Activator.CreateInstance(type);//(Figure)Activator.CreateInstance(type) Convert.ChangeType(Activator.CreateInstance(type), type.BaseType);
+                GetFetchableFigureFromFileIfItIs();
+
                 specifiedFigure.pointCount = 0;
             }
             else
@@ -150,6 +157,11 @@ namespace lab1_v2
         private void FiguresListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             GetFigureAndPen();
+        }
+
+        private void UserFiguresListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            GetFetchableFigureFromFileIfItIs();
         }
 
         private void DrawSpecifiedFigure()
@@ -221,7 +233,7 @@ namespace lab1_v2
             {
                 //save picture
                 bmpStore = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), bmp.PixelFormat);
-                GetFigureAndPen();
+                //GetFigureAndPen();
                 state = State.draw;
             }
 
@@ -468,7 +480,49 @@ namespace lab1_v2
             ClearCanvasAndState();
         }
 
+        private void BtnAddUserFigure_Click(object sender, EventArgs e)
+        {
+            string userFigureFilePath = UserFiguresDirectory + "\\" + UserFigureNameTextBox.Text + SerializationExtension;
+            Type userFigureType = figuresAsm.GetType("Figures.MyUserFigure");
+            MethodInfo methodInfo = userFigureType.GetMethod("SaveUserFigure");
+            string[] argv = new string[2] { UndoFileName, userFigureFilePath };
+            methodInfo.Invoke(null, argv);
+            //MyUserFigure.SaveUserFigure(UndoFileName, userFigureFilePath);
+        }
 
+        private void GetFetchableFigureFromFileIfItIs()
+        {
+            if (specifiedFigure is IFetchDependent && UserFiguresListBox.SelectedIndex != -1)//specifiedFetchDependentFigure
+            {
+                using (FileStream figureFileStream = new FileStream(((FileInfo)UserFiguresListBox.SelectedItem).FullName, FileMode.Open))
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    figureFileStream.Seek(0L, SeekOrigin.Begin);
+                    Type userFigureType = figuresAsm.GetType("Figures.MyUserFigure");
+                    specifiedFigure = formatter.Deserialize(figureFileStream) as Figure;
+                }
+                //specifiedFetchDependentFigure.FetchFigures(userFigureElements);
+            }
+        }
+
+        private void CountExistingUserFigures(out int existingFiguresCount)
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(UserFiguresDirectory);
+            existingFiguresCount = directoryInfo.GetFiles("*" + SerializationExtension).Length;
+        }
+
+        private void BtnRefreshUserList_Click(object sender, EventArgs e)
+        {
+            RefreshUserList();
+        }
+
+        private void RefreshUserList()
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(UserFiguresDirectory);
+            UserFiguresListBox.Items.Clear();
+            foreach (FileInfo userFigureFile in directoryInfo.GetFiles("*" + SerializationExtension))
+                UserFiguresListBox.Items.Add(userFigureFile);
+        }
 
         private void BtnStartHosting_Click(object sender, EventArgs e)
         {
@@ -646,24 +700,16 @@ namespace lab1_v2
             }
         }
 
+        
+
         private void CommitFile(string receivedFileName)
         {
             FileStream undoFile = new FileStream(UndoFileName, FileMode.OpenOrCreate);
             FileStream receivedFileStream = new FileStream(receivedFileName, FileMode.Open);
-            CopyStream(undoFile, receivedFileStream);
+            StdOps.CopyStream(undoFile, receivedFileStream);
             receivedFileStream.Dispose();
             undoFile.Dispose();
         }
 
-        private void CopyStream(Stream destination, Stream source)
-        {
-            int count;
-            byte[] buffer = new byte[BUFSIZ];
-            destination.Seek(0L, SeekOrigin.End);
-            while ((count = source.Read(buffer, 0, buffer.Length)) > 0)
-                destination.Write(buffer, 0, count);
-        }
-
-        
     }
 }
