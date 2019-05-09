@@ -6,6 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Figures;
+using System.Xml.Linq;
 
 using System.Threading.Tasks;
 using System.Net;
@@ -20,7 +21,7 @@ using NetLib;
 //9 redo и undo не меняет состояние панели выбранной фигуры
 //11. баг тянущаяся курва сменить фигуру
 //12.mouse leave event + ctrl z
-//4 лаба длл фигуры подгрузка.
+//4 to save exactly what user drawed add mouse position point to figure points on stop drawing button press
 // ask
 //1. как свапать переменные закрываемые свойствами?(передать как ref)
 //4.лайфхаки отладчика?
@@ -36,24 +37,45 @@ namespace lab1_v2
         private Pen pen;
         private Figure specifiedFigure = null; //Figure dynamic
 
-        private const string LibPath = "..\\..\\Lib";  //"..\\..\\Lib"; "D:\\! 4 сем\\ООТПИСП\\лабы\\lab1\\lab1_v2\\lab1_v2\\Lib\\FiguresLib.dll"
-        private const string LibFiguresName = "FiguresLib.dll";
-        private const string LibUserFiguresName = "UserFigureLib.dll";
-        private const string UndoFileName = "undo.dat";
-        private const string RedoFileName = "redo.dat";
-        private const string ReceivedFileName = "received.dat";
-        private const string PulledFileName = "pulled.dat";
-        private const string UserFiguresDirectory = "user figures";
-        private const string UserFigureFileBaseName = "userFigure";
-        private const string SerializationExtension = ".dat";
+        private const string XValuesName = "Values";
+        private const string XPathValuesName = "PathValues";
+        private const string CfgDirectory = "cfg";
+        private const string CfgFileName = "config.xml";
+        private const string XlibDirectoryName = "LibDirectory";
+        private const string XlibFiguresName = "LibFiguresName";
+        private const string XlibUserFiguresName = "LibUserFiguresName";
+        private const string XundoFileName = "UndoFileName";
+        private const string XredoFileName = "RedoFileName";
+        private const string XreceivedFileName = "ReceivedFileName";
+        private const string XpulledFileName = "PulledFileName";
+        private const string XuserFiguresDirectoryName = "UserFiguresDirectory";
+        private const string XserializationExtensionName = "SerializationExtension";
+
+        private const string XSettingValuesName = "Settings";
+        private const string XPBWidthName = "PBWidth";
+        private const string XPBHeightName = "PBHeight";
+        private const string XColorsName = "Colors";
+        private const string XColorName = "Color";
+
+        private string LibDirectory = null;//"..\\..\\Lib";  //"..\\..\\Lib"; "D:\\! 4 сем\\ООТПИСП\\лабы\\lab1\\lab1_v2\\lab1_v2\\Lib\\FiguresLib.dll"
+        private string LibFiguresName = null;//"FiguresLib.dll";
+        private string LibUserFiguresName = null;//"UserFigureLib.dll";
+        private string UndoFileName = null;//"undo.dat";
+        private string RedoFileName = null;//"redo.dat";
+        private string ReceivedFileName = null;//"received.dat";
+        private string PulledFileName = null;//"pulled.dat";
+        private string UserFiguresDirectory = null;//"user figures";
+        private string SerializationExtension = null;//".dat";
+        private int PBWidth = 0;
+        private int PBHeight = 0;
+        //высота + ширина окна + толщина + палитра цветов
+
 
         private static Assembly figuresAsm;
 
         private BinaryFormatter formatter = new BinaryFormatter();
         private UInt32 undoFiguresCount = 0;
         private UInt32 redoFiguresCount = 0;
-
-        
 
         Socket clientSocket;
         IPEndPoint serverIpEndPoint;
@@ -63,8 +85,15 @@ namespace lab1_v2
         
         private void Form_graphic_Load(object sender, EventArgs e)
         {
+            Reload();
+        }
+
+        private void Reload()
+        {
             new FileStream(UndoFileName, FileMode.Create).Dispose(); //Clear file
             new FileStream(RedoFileName, FileMode.Create).Dispose();
+            PB.Width = PBWidth;
+            PB.Height = PBHeight;
             bmp = new Bitmap(PB.Width, PB.Height);
             graph = Graphics.FromImage(bmp);
             pen = new Pen(Figure.DefaultPenColor, Figure.DefaultPenWidth);
@@ -77,11 +106,93 @@ namespace lab1_v2
         public form_graphic()
         {
             InitializeComponent();
-            LoadFigures();
-
+            string cfgPath = CfgDirectory + "\\" + CfgFileName;
+            bool isOk = true;
+            do
+                try
+                {
+                    if (!isOk && openFileDialog.ShowDialog() == DialogResult.OK)
+                        cfgPath = openFileDialog.FileName;
+                    //InitCfgs(cfgPath);
+                    LoadCfgs(cfgPath);
+                    LoadFigures();
+                    isOk = true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(String.Format("Error occured: {0}. Reload configs.", ex.Message));
+                    isOk = false;
+                }
+            while (!isOk);
+            
         }
 
-       
+        private void InitCfgs(string cfgFilePath)
+        {
+            XDocument xdoc = new XDocument(
+                new XElement(XValuesName,
+                    new XElement(XPathValuesName,
+                        new XElement(XlibDirectoryName, "..\\..\\Lib"),
+                        new XElement(XlibFiguresName, "FiguresLib.dll"),
+                        new XElement(XlibUserFiguresName, "UserFigureLib.dll"),
+                        new XElement(XundoFileName, "undo.dat"),
+                        new XElement(XredoFileName, "redo.dat"),
+                        new XElement(XlibFiguresName, "FiguresLib.dll"),
+                        new XElement(XreceivedFileName, "received.dat"),
+                        new XElement(XpulledFileName, "pulled.dat"),
+                        new XElement(XuserFiguresDirectoryName, "user figures"),
+                        new XElement(XserializationExtensionName, ".dat")),
+                    new XElement(XSettingValuesName,
+                        new XElement(XPBHeightName, "550"),
+                        new XElement(XPBWidthName, "1000")),
+                        new XElement(XColorsName,
+                            new XElement(XColorName, "0"))));
+            xdoc.Save(cfgFilePath); 
+        }
+
+        private void SaveCfgs(string cfgFilePath)
+        {
+            XDocument xdoc = XDocument.Load(cfgFilePath);
+            XElement xRoot = xdoc.Element(XValuesName);
+            XElement xColors = xRoot.Element(XColorsName);
+            xColors.RemoveAll();
+            foreach (int color in colorDialog.CustomColors)
+            {
+                xColors.Add(new XElement(XColorName, color.ToString()));
+            }
+            xRoot.Element(XSettingValuesName).Element(XPBHeightName).Value = PB.Height.ToString();
+            xRoot.Element(XSettingValuesName).Element(XPBWidthName).Value = PB.Width.ToString();
+            xdoc.Save(cfgFilePath);
+        }
+
+        private void LoadCfgs(string cfgFilePath)
+        {
+            XDocument xdoc = XDocument.Load(cfgFilePath);
+            XElement xRoot = xdoc.Element(XValuesName);
+            XElement xPathNode = xRoot.Element(XPathValuesName);
+            LibDirectory = xPathNode.Element(XlibDirectoryName).Value;
+            LibFiguresName = xPathNode.Element(XlibFiguresName).Value;
+            LibUserFiguresName = xPathNode.Element(XlibUserFiguresName).Value;
+            UndoFileName = xPathNode.Element(XundoFileName).Value;
+            RedoFileName = xPathNode.Element(XredoFileName).Value;
+            ReceivedFileName = xPathNode.Element(XreceivedFileName).Value;
+            PulledFileName = xPathNode.Element(XpulledFileName).Value;
+            UserFiguresDirectory = xPathNode.Element(XuserFiguresDirectoryName).Value;
+            SerializationExtension = xPathNode.Element(XserializationExtensionName).Value;
+
+            int colorPos = 0;
+            int[] colorTmp = new int[colorDialog.CustomColors.Length];  
+            foreach (XElement xColor in xRoot.Element(XColorsName).Elements(XColorName))
+            {
+                colorTmp[colorPos++] = int.Parse(xColor.Value);
+                colorPos %= colorDialog.CustomColors.Length;
+            }
+            colorDialog.CustomColors = colorTmp;
+
+            XElement xSettingNode = xRoot.Element(XSettingValuesName);
+            PBHeight = int.Parse(xSettingNode.Element(XPBHeightName).Value);
+            PBWidth = int.Parse(xSettingNode.Element(XPBWidthName).Value);
+        }
 
         //scan declared types and add to GUI those which can be drawed 
         private void LoadFigures()
@@ -106,14 +217,14 @@ namespace lab1_v2
             //AppDomain.CurrentDomain.DefineDynamicAssembly(asm.GetName(), System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
             #endregion
 
-            byte[] rawAssembly = StdOps.LoadFile(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName);
+            byte[] rawAssembly = StdOps.LoadFile(Environment.CurrentDirectory + "\\" + LibDirectory + "\\"+ LibFiguresName);
             figuresAsm = AppDomain.CurrentDomain.Load(rawAssembly);
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
 
             //figuresAsm = Assembly.LoadFrom(Path.GetFullPath(Environment.CurrentDirectory + @"\..\..\Lib\" + LibFiguresName));
             //AppDomain.CurrentDomain.Load(figuresAsm.GetName());//figuresAsm.FullName
 
-
+            FiguresListBox.Items.Clear();
             foreach (Type type in figuresAsm.GetTypes())
             {
                 if ((type.Namespace == "Figures") && (type.GetInterface("IGUIIcon") != null))
@@ -121,7 +232,7 @@ namespace lab1_v2
                     FiguresListBox.Items.Add(type);
                 }
             }
-
+            
             RefreshUserList();
         }
 
@@ -222,6 +333,7 @@ namespace lab1_v2
 
         private void StopDrawing()
         {
+            specifiedFigure.pointCount++;//prev point value from mouse move event steel is in array[pointCount + 1]
             SerializeSpecifiedFigure();
             specifiedFigure.pointCount = 0;
             state = State.pending;
@@ -272,7 +384,7 @@ namespace lab1_v2
         {
             if (state == State.draw)
             {
-                specifiedFigure.pointCount++;//prev point value from mouse move event steel is in array[pointCount + 1]
+                
                 StopDrawing();
             }
         }
@@ -439,6 +551,43 @@ namespace lab1_v2
             }
         }
 
+        private void LoadConfigsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    //SaveCfgs(CfgDirectory + "\\" + CfgFileName);
+                    ClearCanvasAndState();
+                    LoadCfgs(openFileDialog.FileName);
+                    Reload();
+                    LoadFigures();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(String.Format("Error occured: {0}. Reload configs.", ex.Message));
+                    throw;
+                }
+            }
+        }
+
+        private void SaveConfigsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    InitCfgs(openFileDialog.FileName);
+                    SaveCfgs(openFileDialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(String.Format("Error occured: {0}.", ex.Message));
+                    throw;
+                }
+            }
+        }
+
         private void BtnLoad_Click(object sender, EventArgs e)
         {
             FileStream copyUndoFiguresStream = null;
@@ -505,12 +654,6 @@ namespace lab1_v2
             }
         }
 
-        private void CountExistingUserFigures(out int existingFiguresCount)
-        {
-            DirectoryInfo directoryInfo = new DirectoryInfo(UserFiguresDirectory);
-            existingFiguresCount = directoryInfo.GetFiles("*" + SerializationExtension).Length;
-        }
-
         private void BtnRefreshUserList_Click(object sender, EventArgs e)
         {
             RefreshUserList();
@@ -523,6 +666,8 @@ namespace lab1_v2
             foreach (FileInfo userFigureFile in directoryInfo.GetFiles("*" + SerializationExtension))
                 UserFiguresListBox.Items.Add(userFigureFile);
         }
+
+
 
         private void BtnStartHosting_Click(object sender, EventArgs e)
         {

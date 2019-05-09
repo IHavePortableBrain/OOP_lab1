@@ -49,19 +49,23 @@
             this.btnRefreshUserList = new System.Windows.Forms.Button();
             this.UserFigureNameTextBox = new System.Windows.Forms.TextBox();
             this.UserFiguresListBox = new System.Windows.Forms.ListBox();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.loadConfigsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveConfigsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.PB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPenWidth)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPort)).BeginInit();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // PB
             // 
             this.PB.BackColor = System.Drawing.SystemColors.Window;
             this.PB.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.PB.Location = new System.Drawing.Point(12, 154);
+            this.PB.Location = new System.Drawing.Point(12, 184);
             this.PB.Margin = new System.Windows.Forms.Padding(0);
             this.PB.Name = "PB";
-            this.PB.Size = new System.Drawing.Size(1345, 785);
+            this.PB.Size = new System.Drawing.Size(1345, 755);
             this.PB.TabIndex = 2;
             this.PB.TabStop = false;
             this.PB.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PB_MouseDown);
@@ -70,7 +74,7 @@
             // 
             // btnClear
             // 
-            this.btnClear.Location = new System.Drawing.Point(476, 73);
+            this.btnClear.Location = new System.Drawing.Point(466, 90);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(120, 47);
             this.btnClear.TabIndex = 6;
@@ -80,7 +84,7 @@
             // 
             // btnColor
             // 
-            this.btnColor.Location = new System.Drawing.Point(332, 73);
+            this.btnColor.Location = new System.Drawing.Point(322, 90);
             this.btnColor.Name = "btnColor";
             this.btnColor.Size = new System.Drawing.Size(120, 47);
             this.btnColor.TabIndex = 7;
@@ -90,7 +94,7 @@
             // 
             // numericPenWidth
             // 
-            this.numericPenWidth.Location = new System.Drawing.Point(332, 124);
+            this.numericPenWidth.Location = new System.Drawing.Point(322, 141);
             this.numericPenWidth.Maximum = new decimal(new int[] {
             30,
             0,
@@ -116,7 +120,7 @@
             // 
             this.FiguresListBox.FormattingEnabled = true;
             this.FiguresListBox.ItemHeight = 16;
-            this.FiguresListBox.Location = new System.Drawing.Point(22, 14);
+            this.FiguresListBox.Location = new System.Drawing.Point(12, 31);
             this.FiguresListBox.Name = "FiguresListBox";
             this.FiguresListBox.Size = new System.Drawing.Size(282, 100);
             this.FiguresListBox.TabIndex = 9;
@@ -124,7 +128,7 @@
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(332, 14);
+            this.btnSave.Location = new System.Drawing.Point(322, 31);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(120, 47);
             this.btnSave.TabIndex = 10;
@@ -134,7 +138,7 @@
             // 
             // btnLoad
             // 
-            this.btnLoad.Location = new System.Drawing.Point(476, 14);
+            this.btnLoad.Location = new System.Drawing.Point(466, 31);
             this.btnLoad.Name = "btnLoad";
             this.btnLoad.Size = new System.Drawing.Size(120, 47);
             this.btnLoad.TabIndex = 11;
@@ -153,7 +157,7 @@
             // 
             // btnStartHosting
             // 
-            this.btnStartHosting.Location = new System.Drawing.Point(984, 17);
+            this.btnStartHosting.Location = new System.Drawing.Point(974, 34);
             this.btnStartHosting.Name = "btnStartHosting";
             this.btnStartHosting.Size = new System.Drawing.Size(105, 47);
             this.btnStartHosting.TabIndex = 12;
@@ -163,7 +167,7 @@
             // 
             // btnConnect
             // 
-            this.btnConnect.Location = new System.Drawing.Point(1110, 17);
+            this.btnConnect.Location = new System.Drawing.Point(1100, 34);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(105, 47);
             this.btnConnect.TabIndex = 13;
@@ -174,7 +178,7 @@
             // maskedTextBox
             // 
             this.maskedTextBox.AsciiOnly = true;
-            this.maskedTextBox.Location = new System.Drawing.Point(1110, 123);
+            this.maskedTextBox.Location = new System.Drawing.Point(1100, 140);
             this.maskedTextBox.Name = "maskedTextBox";
             this.maskedTextBox.Size = new System.Drawing.Size(100, 22);
             this.maskedTextBox.TabIndex = 14;
@@ -183,7 +187,7 @@
             // 
             // numericPort
             // 
-            this.numericPort.Location = new System.Drawing.Point(984, 85);
+            this.numericPort.Location = new System.Drawing.Point(974, 102);
             this.numericPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -200,7 +204,7 @@
             // 
             // btnCommit
             // 
-            this.btnCommit.Location = new System.Drawing.Point(1236, 17);
+            this.btnCommit.Location = new System.Drawing.Point(1226, 34);
             this.btnCommit.Name = "btnCommit";
             this.btnCommit.Size = new System.Drawing.Size(121, 47);
             this.btnCommit.TabIndex = 16;
@@ -210,7 +214,7 @@
             // 
             // btnPull
             // 
-            this.btnPull.Location = new System.Drawing.Point(1236, 73);
+            this.btnPull.Location = new System.Drawing.Point(1226, 90);
             this.btnPull.Name = "btnPull";
             this.btnPull.Size = new System.Drawing.Size(121, 40);
             this.btnPull.TabIndex = 17;
@@ -220,7 +224,7 @@
             // 
             // btnDisconnect
             // 
-            this.btnDisconnect.Location = new System.Drawing.Point(1110, 70);
+            this.btnDisconnect.Location = new System.Drawing.Point(1100, 87);
             this.btnDisconnect.Name = "btnDisconnect";
             this.btnDisconnect.Size = new System.Drawing.Size(105, 47);
             this.btnDisconnect.TabIndex = 18;
@@ -230,7 +234,7 @@
             // 
             // btnAddUserFigure
             // 
-            this.btnAddUserFigure.Location = new System.Drawing.Point(841, 70);
+            this.btnAddUserFigure.Location = new System.Drawing.Point(831, 90);
             this.btnAddUserFigure.Name = "btnAddUserFigure";
             this.btnAddUserFigure.Size = new System.Drawing.Size(98, 47);
             this.btnAddUserFigure.TabIndex = 19;
@@ -240,7 +244,7 @@
             // 
             // btnRefreshUserList
             // 
-            this.btnRefreshUserList.Location = new System.Drawing.Point(841, 17);
+            this.btnRefreshUserList.Location = new System.Drawing.Point(831, 34);
             this.btnRefreshUserList.Name = "btnRefreshUserList";
             this.btnRefreshUserList.Size = new System.Drawing.Size(98, 47);
             this.btnRefreshUserList.TabIndex = 20;
@@ -250,7 +254,7 @@
             // 
             // UserFigureNameTextBox
             // 
-            this.UserFigureNameTextBox.Location = new System.Drawing.Point(625, 82);
+            this.UserFigureNameTextBox.Location = new System.Drawing.Point(615, 101);
             this.UserFigureNameTextBox.Name = "UserFigureNameTextBox";
             this.UserFigureNameTextBox.Size = new System.Drawing.Size(191, 22);
             this.UserFigureNameTextBox.TabIndex = 21;
@@ -259,17 +263,43 @@
             // 
             this.UserFiguresListBox.FormattingEnabled = true;
             this.UserFiguresListBox.ItemHeight = 16;
-            this.UserFiguresListBox.Location = new System.Drawing.Point(625, 17);
+            this.UserFiguresListBox.Location = new System.Drawing.Point(615, 34);
             this.UserFiguresListBox.Name = "UserFiguresListBox";
             this.UserFiguresListBox.Size = new System.Drawing.Size(191, 52);
             this.UserFiguresListBox.TabIndex = 22;
             this.UserFiguresListBox.SelectedIndexChanged += new System.EventHandler(this.UserFiguresListBox_SelectedIndexChanged);
             // 
+            // menuStrip1
+            // 
+            this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.loadConfigsToolStripMenuItem,
+            this.saveConfigsToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(1363, 28);
+            this.menuStrip1.TabIndex = 23;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // loadConfigsToolStripMenuItem
+            // 
+            this.loadConfigsToolStripMenuItem.Name = "loadConfigsToolStripMenuItem";
+            this.loadConfigsToolStripMenuItem.Size = new System.Drawing.Size(106, 24);
+            this.loadConfigsToolStripMenuItem.Text = "Load configs";
+            this.loadConfigsToolStripMenuItem.Click += new System.EventHandler(this.LoadConfigsToolStripMenuItem_Click);
+            // 
+            // saveConfigsToolStripMenuItem
+            // 
+            this.saveConfigsToolStripMenuItem.Name = "saveConfigsToolStripMenuItem";
+            this.saveConfigsToolStripMenuItem.Size = new System.Drawing.Size(104, 24);
+            this.saveConfigsToolStripMenuItem.Text = "Save configs";
+            this.saveConfigsToolStripMenuItem.Click += new System.EventHandler(this.SaveConfigsToolStripMenuItem_Click);
+            // 
             // form_graphic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1396, 953);
+            this.ClientSize = new System.Drawing.Size(1363, 953);
             this.Controls.Add(this.UserFiguresListBox);
             this.Controls.Add(this.UserFigureNameTextBox);
             this.Controls.Add(this.btnRefreshUserList);
@@ -288,8 +318,10 @@
             this.Controls.Add(this.btnColor);
             this.Controls.Add(this.btnClear);
             this.Controls.Add(this.PB);
+            this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.KeyPreview = true;
+            this.MainMenuStrip = this.menuStrip1;
             this.Name = "form_graphic";
             this.Text = "Graphic redactor";
             this.Load += new System.EventHandler(this.Form_graphic_Load);
@@ -299,6 +331,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.PB)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPenWidth)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPort)).EndInit();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -326,6 +360,9 @@
         private System.Windows.Forms.Button btnRefreshUserList;
         private System.Windows.Forms.TextBox UserFigureNameTextBox;
         private System.Windows.Forms.ListBox UserFiguresListBox;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem loadConfigsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveConfigsToolStripMenuItem;
     }
 }
 
