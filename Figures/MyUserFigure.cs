@@ -43,12 +43,15 @@ namespace Figures
              //graph.Clip.Translate(-pointFs[0].X, -pointFs[0].Y);
         }
 
+        //if point count < minPointCount Sets pointcount to minPointCount
         public static int SaveUserFigure(string UndoFileName, string userFigureFilePath)
         {
             if (!File.Exists(Path.GetFullPath(UndoFileName)))
                 return 1;
             BinaryFormatter formatter = new BinaryFormatter();
             MyUserFigure tempFigure = new MyUserFigure();
+            //if (tempFigure.pointCount < MinDrawPointCount)
+               // tempFigure.pointCount = MinDrawPointCount;
             using (FileStream undoFileStream = new FileStream(UndoFileName, FileMode.Open))
                 while (undoFileStream.Position < undoFileStream.Length)
                     tempFigure.Elements.Add((Figure)formatter.Deserialize(undoFileStream));

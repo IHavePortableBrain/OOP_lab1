@@ -68,8 +68,6 @@ namespace lab1_v2
         private string SerializationExtension = null;//".dat";
         private int PBWidth = 0;
         private int PBHeight = 0;
-        //высота + ширина окна + толщина + палитра цветов
-
 
         private static Assembly figuresAsm;
 
@@ -267,12 +265,26 @@ namespace lab1_v2
 
         private void FiguresListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            GetFigureAndPen();
+            try
+            {
+                GetFigureAndPen();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(String.Format("Error occured: {0}.", ex.Message));
+            }
         }
 
         private void UserFiguresListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            GetFetchableFigureFromFileIfItIs();
+            try
+            {
+                GetFetchableFigureFromFileIfItIs();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(String.Format("Error occured: {0}.", ex.Message));
+            }
         }
 
         private void DrawSpecifiedFigure()
@@ -384,7 +396,6 @@ namespace lab1_v2
         {
             if (state == State.draw)
             {
-                
                 StopDrawing();
             }
         }
@@ -470,8 +481,10 @@ namespace lab1_v2
                 {
                     ClearPaintBoxCanvas();
                     state = State.pending;
-                    specifiedFigure.pointCount = 0;
+                    //
                 }
+                GetFigureAndPen();
+                specifiedFigure.pointCount = 0;//
             }
             else
             if (e.KeyChar == 25 && (redoFiguresCount > 0))//ctrl+y
@@ -511,9 +524,9 @@ namespace lab1_v2
             {
                 pen.Width = (float)numericPenWidth.Value;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                MessageBox.Show(String.Format("Error occured: {0}.", ex.Message));
             }
         }
 
@@ -523,9 +536,9 @@ namespace lab1_v2
             {
                 pen.Width = (float)numericPenWidth.Value;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                MessageBox.Show(String.Format("Error occured: {0}.", ex.Message));
             }
         }
 
@@ -566,7 +579,6 @@ namespace lab1_v2
                 catch (Exception ex)
                 {
                     MessageBox.Show(String.Format("Error occured: {0}. Reload configs.", ex.Message));
-                    throw;
                 }
             }
         }
@@ -583,7 +595,6 @@ namespace lab1_v2
                 catch (Exception ex)
                 {
                     MessageBox.Show(String.Format("Error occured: {0}.", ex.Message));
-                    throw;
                 }
             }
         }
@@ -631,12 +642,19 @@ namespace lab1_v2
 
         private void BtnAddUserFigure_Click(object sender, EventArgs e)
         {
-            string userFigureFilePath = UserFiguresDirectory + "\\" + UserFigureNameTextBox.Text + SerializationExtension;
-            Type userFigureType = figuresAsm.GetType("Figures.MyUserFigure");
-            MethodInfo methodInfo = userFigureType.GetMethod("SaveUserFigure");
-            string[] argv = new string[2] { UndoFileName, userFigureFilePath };
-            methodInfo.Invoke(null, argv);
-            //MyUserFigure.SaveUserFigure(UndoFileName, userFigureFilePath);
+            try
+            {
+                string userFigureFilePath = UserFiguresDirectory + "\\" + UserFigureNameTextBox.Text + SerializationExtension;
+                Type userFigureType = figuresAsm.GetType("Figures.MyUserFigure");
+                MethodInfo methodInfo = userFigureType.GetMethod("SaveUserFigure");
+                string[] argv = new string[2] { UndoFileName, userFigureFilePath };
+                methodInfo.Invoke(null, argv);
+                //MyUserFigure.SaveUserFigure(UndoFileName, userFigureFilePath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(String.Format("Error occured: {0}.", ex.Message));
+            }
         }
 
         private void GetFetchableFigureFromFileIfItIs()
@@ -656,7 +674,14 @@ namespace lab1_v2
 
         private void BtnRefreshUserList_Click(object sender, EventArgs e)
         {
-            RefreshUserList();
+            try
+            {
+                RefreshUserList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(String.Format("Error occured: {0}.", ex.Message));
+            }
         }
 
         private void RefreshUserList()
@@ -844,8 +869,6 @@ namespace lab1_v2
                 }
             }
         }
-
-        
 
         private void CommitFile(string receivedFileName)
         {
